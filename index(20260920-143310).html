@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NILDA Instruction Hub</title>
+
+  <style>
+    :root{
+      --bg:#050505;
+      --panel:#111111;
+      --panel2:#171717;
+      --text:#f5f5f5;
+      --muted:#a8a8a8;
+      --line:#2a2a2a;
+      --accent:#00d4ff;
+      --accent2:#8cff3f;
+      --danger:#ff5c7a;
+      --warning:#ffc857;
+      --shadow:0 12px 40px rgba(0,0,0,.45);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left,rgba(0,212,255,.09),transparent 28%),
+        radial-gradient(circle at top right,rgba(140,255,63,.06),transparent 24%),
+        var(--bg);
+    }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:100;
+      background:rgba(5,5,5,.90);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--line);
+    }
+
+    .topbar{
+      max-width:1250px;
+      margin:auto;
+      padding:18px 22px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+
+    .brand{
+      font-size:1.35rem;
+      font-weight:900;
+      letter-spacing:.06em;
+    }
+
+    .brand span{color:var(--accent)}
+
+    nav{
+      display:flex;
+      gap:9px;
+      flex-wrap:wrap;
+    }
+
+    .tab-btn{
+      border:1px solid var(--line);
+      background:#0a0a0a;
+      color:#fff;
+      padding:11px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:800;
+      transition:.18s ease;
+    }
+
+    .tab-btn:hover,.tab-btn.active{
+      color:var(--accent);
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(0,212,255,.08);
+    }
+
+    main{
+      max-width:1250px;
+      margin:auto;
+      padding:34px 22px 70px;
+    }
+
+    .page{display:none}
+    .page.active{display:block}
+
+    .hero{
+      padding:34px;
+      margin-bottom:25px;
+      border:1px solid var(--line);
+      border-radius:24px;
+      background:linear-gradient(135deg,#0c0c0c,#171717);
+      box-shadow:var(--shadow);
+    }
+
+    .eyebrow{
+      color:var(--accent);
+      text-transform:uppercase;
+      letter-spacing:.15em;
+      font-size:.78rem;
+      font-weight:900;
+    }
+
+    h1{
+      margin:.22em 0 .2em;
+      font-size:clamp(2rem,4vw,4rem);
+      line-height:1.02;
+    }
+
+    h2{margin:0 0 12px}
+    h3{margin:0}
+    p{color:var(--muted);line-height:1.65}
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .developer-layout{
+      display:grid;
+      grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);
+      gap:22px;
+      align-items:start;
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:15px;
+    }
+
+    .full{grid-column:1/-1}
+
+    label{
+      display:block;
+      margin-bottom:7px;
+      font-size:.9rem;
+      font-weight:800;
+      color:#ddd;
+    }
+
+    input,textarea,select{
+      width:100%;
+      padding:12px 13px;
+      border-radius:12px;
+      border:1px solid #303030;
+      background:#090909;
+      color:#fff;
+      outline:none;
+    }
+
+    input:focus,textarea:focus,select:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(0,212,255,.08);
+    }
+
+    textarea{min-height:100px;resize:vertical}
+
+    .video-input{
+      padding:14px;
+      margin-top:10px;
+      border:1px solid #272727;
+      border-radius:14px;
+      background:#0b0b0b;
+    }
+
+    .video-input-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    }
+
+    button.primary,button.secondary,button.danger{
+      border:0;
+      border-radius:12px;
+      padding:12px 16px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    button.primary{background:var(--accent);color:#001014}
+    button.secondary{background:#222;color:#fff;border:1px solid #3a3a3a}
+    button.danger{background:var(--danger);color:#fff}
+    button:disabled{opacity:.45;cursor:not-allowed}
+
+    .status{
+      margin-top:14px;
+      min-height:22px;
+      color:var(--accent2);
+      font-weight:800;
+    }
+
+    .error{color:#ff879a}
+    .warning{color:var(--warning)}
+
+    .setup-box{
+      border:1px solid #40391e;
+      background:#171409;
+      border-radius:14px;
+      padding:15px;
+      margin-bottom:18px;
+    }
+
+    .setup-box strong{color:var(--warning)}
+
+    .video-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(270px,1fr));
+      gap:18px;
+    }
+
+    .video-card{
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:var(--panel);
+      box-shadow:var(--shadow);
+    }
+
+    .video-frame{
+      aspect-ratio:16/9;
+      border:1px dashed #393939;
+      border-radius:14px;
+      overflow:hidden;
+      background:#080808;
+      display:grid;
+      place-items:center;
+      color:#777;
+    }
+
+    video,iframe{
+      width:100%;
+      height:100%;
+      border:0;
+      background:#000;
+    }
+
+    .video-card h3{margin:13px 0 6px}
+
+    .tag{
+      display:inline-block;
+      margin-top:8px;
+      padding:6px 9px;
+      border-radius:999px;
+      color:var(--accent);
+      border:1px solid #17353c;
+      background:#0d2024;
+      font-size:.75rem;
+      font-weight:900;
+    }
+
+    .page-row{
+      display:flex;
+      gap:12px;
+      justify-content:space-between;
+      align-items:center;
+      padding:13px 0;
+      border-bottom:1px solid #242424;
+    }
+
+    .page-row small{
+      display:block;
+      color:#858585;
+      margin-top:4px;
+    }
+
+    .empty-note{color:#777}
+
+    details{
+      border:1px solid #2c2c2c;
+      border-radius:14px;
+      padding:13px 15px;
+      background:#0b0b0b;
+      margin-top:15px;
+    }
+
+    summary{
+      cursor:pointer;
+      font-weight:900;
+    }
+
+    code{
+      background:#090909;
+      border:1px solid #222;
+      padding:2px 6px;
+      border-radius:6px;
+    }
+
+    footer{
+      padding:25px;
+      text-align:center;
+      color:#777;
+      border-top:1px solid var(--line);
+      background:#070707;
+    }
+
+    @media(max-width:820px){
+      .developer-layout{grid-template-columns:1fr}
+      .form-grid,.video-input-grid{grid-template-columns:1fr}
+      .hero{padding:24px}
+      .page-row{align-items:flex-start;flex-direction:column}
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="topbar">
+    <div class="brand">NILDA <span>Instruction Hub</span></div>
+
+    <nav id="mainNav">
+      <button class="tab-btn active" data-page="developers">Developers</button>
+      <button class="tab-btn" data-page="robotics">DIY Robotics Kit</button>
+      <button class="tab-btn" data-page="mandala">Mandala Coaster Art</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- DEVELOPERS -->
+  <section id="developers" class="page active">
+
+    <div class="hero">
+      <div class="eyebrow">GitHub Repository Content Manager</div>
+      <h1>Developers Page</h1>
+      <p>
+        New products are stored inside your GitHub repository under the
+        <strong>products</strong> folder. The website reads that folder's manifest
+        whenever it opens, so added product pages remain available after refresh
+        and on other devices.
+      </p>
+    </div>
+
+    <div class="developer-layout">
+
+      <div class="panel">
+
+        <div class="setup-box">
+          <strong>How this works:</strong>
+          the browser does not keep your product pages only in local storage.
+          When you press <strong>Create & Save Page</strong>, the product data is
+          committed into your GitHub repository as
+          <code>products/product-name.json</code> and the master list is stored in
+          <code>products/index.json</code>.
+        </div>
+
+        <h2>GitHub Repository Connection</h2>
+
+        <div class="form-grid">
+          <div>
+            <label for="ghOwner">GitHub username / repository owner</label>
+            <input id="ghOwner" placeholder="Example: my-github-name">
+          </div>
+
+          <div>
+            <label for="ghRepo">Repository name</label>
+            <input id="ghRepo" placeholder="Example: instruction-videos">
+          </div>
+
+          <div>
+            <label for="ghBranch">Branch</label>
+            <input id="ghBranch" value="main">
+          </div>
+
+          <div>
+            <label for="ghToken">GitHub token</label>
+            <input id="ghToken" type="password" placeholder="Fine-grained token">
+          </div>
+        </div>
+
+        <p>
+          Use a fine-grained GitHub token restricted to this repository with
+          <strong>Contents: Read and write</strong>. The token is kept only for the
+          current browser session and is not written into this HTML file.
+        </p>
+
+        <div class="actions">
+          <button class="secondary" id="saveConnectionBtn">Use These Settings</button>
+          <button class="secondary" id="testConnectionBtn">Test Connection</button>
+        </div>
+
+        <div id="connectionStatus" class="status"></div>
+
+        <div style="margin-top:28px;padding-top:22px;border-top:1px solid var(--line)">
+          <h2>Create a New Product Page</h2>
+
+          <div class="form-grid">
+
+            <div>
+              <label for="projectName">What is the name of the project/product?</label>
+              <input id="projectName" placeholder="Example: Solar Rover Kit">
+            </div>
+
+            <div>
+              <label for="pageTitle">What should the page title be?</label>
+              <input id="pageTitle" placeholder="Example: Solar Rover Instructions">
+            </div>
+
+            <div>
+              <label for="category">Product category</label>
+              <select id="category">
+                <option>Robotics</option>
+                <option>Electronics</option>
+                <option>Arts & Crafts</option>
+                <option>Educational Toy</option>
+                <option>Science Kit</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="targetAge">Target age group</label>
+              <input id="targetAge" placeholder="Example: 7–12 years">
+            </div>
+
+            <div>
+              <label for="videoCount">How many videos are to be added?</label>
+              <input id="videoCount" type="number" min="1" max="50" value="3">
+            </div>
+
+            <div>
+              <label for="layoutStyle">Video layout</label>
+              <select id="layoutStyle">
+                <option value="grid">Video Grid</option>
+                <option value="single">Single Column</option>
+              </select>
+            </div>
+
+            <div class="full">
+              <label for="description">Short product description</label>
+              <textarea id="description" placeholder="Describe the product and what the user will learn."></textarea>
+            </div>
+
+            <div class="full">
+              <label>Video details</label>
+              <div id="videoFields"></div>
+            </div>
+
+            <div class="full">
+              <label for="extraNotes">Anything else needed on the page?</label>
+              <textarea id="extraNotes" placeholder="Safety warning, manual link, QR code, parts list, troubleshooting, support information, etc."></textarea>
+            </div>
+
+          </div>
+
+          <div class="actions">
+            <button class="primary" id="createBtn">Create & Save Page</button>
+            <button class="secondary" id="clearFormBtn">Clear Form</button>
+          </div>
+
+          <div id="saveStatus" class="status"></div>
+        </div>
+
+        <div style="margin-top:28px;padding-top:22px;border-top:1px solid var(--line)">
+          <h2>Manage Added Pages</h2>
+          <p>
+            Delete removes the selected product JSON file from the repository and
+            removes it from <code>products/index.json</code>.
+          </p>
+
+          <div id="manageList"></div>
+        </div>
+
+      </div>
+
+      <aside class="panel">
+
+        <h2>Repository Structure</h2>
+
+        <p>After products are added, your repository will look like this:</p>
+
+        <pre style="white-space:pre-wrap;color:#d5d5d5;background:#070707;padding:12px;border-radius:10px;border:1px solid #242424">index.html
+videos/
+  your-video-1.mp4
+  your-video-2.mp4
+products/
+  index.json
+  solar-rover-kit.json
+  another-product.json</pre>
+
+        <p>
+          Upload video files normally to your GitHub <code>videos</code> folder.
+          Then enter paths such as <code>videos/solar-rover-1.mp4</code> in the
+          product form.
+        </p>
+
+        <details>
+          <summary>Important GitHub setup</summary>
+
+          <p>
+            Create a fine-grained Personal Access Token in GitHub and give it
+            access only to the repository containing this website.
+          </p>
+
+          <p>
+            Give the token <strong>Contents: Read and write</strong> permission.
+            Do not paste the token directly into the HTML source.
+          </p>
+
+          <p>
+            Enter the token in the Developers tab only when you need to add or
+            delete product pages.
+          </p>
+        </details>
+
+        <details>
+          <summary>Why the index.html does not need to be rewritten</summary>
+
+          <p>
+            The main index file automatically reads
+            <code>products/index.json</code>. That file tells the website which
+            product pages exist. When a product is added, the manifest is updated
+            in GitHub, so the new tab/page appears automatically whenever the site
+            is loaded.
+          </p>
+        </details>
+
+      </aside>
+
+    </div>
+  </section>
+
+
+  <!-- DIY ROBOTICS -->
+  <section id="robotics" class="page">
+
+    <div class="hero">
+      <div class="eyebrow">Instruction Videos</div>
+      <h1>DIY Robotic & Electronic Kit</h1>
+      <p>
+        Step-by-step instructional videos for assembling, connecting and testing
+        your DIY robotics and electronics projects.
+      </p>
+    </div>
+
+    <div class="video-grid">
+
+      <article class="video-card">
+        <div class="video-frame">
+          <video controls preload="metadata">
+            <source src="videos/robotics-project-1.mp4" type="video/mp4">
+          </video>
+        </div>
+
+        <span class="tag">Project 1</span>
+        <h3>Instruction Video 1</h3>
+        <p>Replace this path with your actual video file.</p>
+      </article>
+
+      <article class="video-card">
+        <div class="video-frame">
+          <video controls preload="metadata">
+            <source src="videos/robotics-project-2.mp4" type="video/mp4">
+          </video>
+        </div>
+
+        <span class="tag">Project 2</span>
+        <h3>Instruction Video 2</h3>
+        <p>Add your second project instruction video here.</p>
+      </article>
+
+      <article class="video-card">
+        <div class="video-frame">
+          <video controls preload="metadata">
+            <source src="videos/robotics-project-3.mp4" type="video/mp4">
+          </video>
+        </div>
+
+        <span class="tag">Project 3</span>
+        <h3>Instruction Video 3</h3>
+        <p>Add your third project instruction video here.</p>
+      </article>
+
+    </div>
+  </section>
+
+
+  <!-- MANDALA -->
+  <section id="mandala" class="page">
+
+    <div class="hero">
+      <div class="eyebrow">Art Instruction Videos</div>
+      <h1>Mandala Coaster Art</h1>
+      <p>Follow the videos to create Mandala coaster artwork step by step.</p>
+    </div>
+
+    <div class="video-grid">
+
+      <article class="video-card">
+        <div class="video-frame">
+          <video controls preload="metadata">
+            <source src="videos/mandala-step-1.mp4" type="video/mp4">
+          </video>
+        </div>
+
+        <span class="tag">Step 1</span>
+        <h3>Getting Started</h3>
+        <p>Introduce the coaster, materials and design.</p>
+      </article>
+
+      <article class="video-card">
+        <div class="video-frame">
+          <video controls preload="metadata">
+            <source src="videos/mandala-step-2.mp4" type="video/mp4">
+          </video>
+        </div>
+
+        <span class="tag">Step 2</span>
+        <h3>Create the Pattern</h3>
+        <p>Show the Mandala pattern-making process.</p>
+      </article>
+
+      <article class="video-card">
+        <div class="video-frame">
+          <video controls preload="metadata">
+            <source src="videos/mandala-step-3.mp4" type="video/mp4">
+          </video>
+        </div>
+
+        <span class="tag">Step 3</span>
+        <h3>Finish the Coaster</h3>
+        <p>Complete the artwork and final finishing steps.</p>
+      </article>
+
+    </div>
+  </section>
+
+
+  <!-- DYNAMIC PRODUCT PAGES -->
+  <div id="dynamicPages"></div>
+
+</main>
+
+<footer>
+  © <span id="year"></span> NILDA Instruction Hub
+</footer>
+
+
+<script>
+/* ============================================================
+   NILDA GITHUB CONTENT STORE
+
+   Public visitors:
+   - index.html reads products/index.json from the repository.
+   - No GitHub token is required.
+
+   Developer:
+   - enters owner, repository, branch and a fine-grained token.
+   - product JSON files are written into /products.
+   ============================================================ */
+
+const nav = document.getElementById("mainNav");
+const dynamicPages = document.getElementById("dynamicPages");
+const videoCount = document.getElementById("videoCount");
+const videoFields = document.getElementById("videoFields");
+
+const connectionStatus = document.getElementById("connectionStatus");
+const saveStatus = document.getElementById("saveStatus");
+const manageList = document.getElementById("manageList");
+
+let loadedProducts = [];
+let manifestData = { products: [] };
+
+
+function slugify(text){
+  return String(text || "product")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"");
+}
+
+
+function escapeHtml(value=""){
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#039;"
+  }[char]));
+}
+
+
+function showPage(pageId){
+  document.querySelectorAll(".page").forEach(page => page.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+
+  const page = document.getElementById(pageId);
+  const btn = document.querySelector(`.tab-btn[data-page="${pageId}"]`);
+
+  if(page) page.classList.add("active");
+  if(btn) btn.classList.add("active");
+
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+
+nav.addEventListener("click",event=>{
+  if(event.target.matches(".tab-btn")){
+    showPage(event.target.dataset.page);
+  }
+});
+
+
+function buildVideoFields(){
+  const count = Math.max(1,Math.min(50,Number(videoCount.value)||1));
+
+  videoCount.value = count;
+  videoFields.innerHTML = "";
+
+  for(let i=1;i<=count;i++){
+    const box = document.createElement("div");
+    box.className = "video-input";
+
+    box.innerHTML = `
+      <strong>Video ${i}</strong>
+
+      <div class="video-input-grid">
+        <div>
+          <label>Video title</label>
+          <input class="video-title" placeholder="Example: Assemble the chassis">
+        </div>
+
+        <div>
+          <label>Video file path or URL</label>
+          <input class="video-src" placeholder="videos/project1.mp4">
+        </div>
+      </div>
+    `;
+
+    videoFields.appendChild(box);
+  }
+}
+
+
+videoCount.addEventListener("input",buildVideoFields);
+buildVideoFields();
+
+
+function collectFormData(){
+  const titles = [...document.querySelectorAll(".video-title")];
+  const sources = [...document.querySelectorAll(".video-src")];
+
+  return {
+    name: document.getElementById("projectName").value.trim(),
+    pageTitle: document.getElementById("pageTitle").value.trim(),
+    category: document.getElementById("category").value,
+    targetAge: document.getElementById("targetAge").value.trim(),
+    description: document.getElementById("description").value.trim(),
+    extraNotes: document.getElementById("extraNotes").value.trim(),
+    layout: document.getElementById("layoutStyle").value,
+    videos: titles.map((input,index)=>({
+      title: input.value.trim() || `Instruction Video ${index+1}`,
+      src: sources[index].value.trim()
+    }))
+  };
+}
+
+
+function clearProductForm(){
+  document.getElementById("projectName").value = "";
+  document.getElementById("pageTitle").value = "";
+  document.getElementById("targetAge").value = "";
+  document.getElementById("description").value = "";
+  document.getElementById("extraNotes").value = "";
+  document.getElementById("category").value = "Robotics";
+  document.getElementById("layoutStyle").value = "grid";
+
+  videoCount.value = 3;
+  buildVideoFields();
+}
+
+
+document.getElementById("clearFormBtn").addEventListener("click",clearProductForm);
+
+
+/* ------------------------------
+   PUBLIC PRODUCT LOADING
+   ------------------------------ */
+
+async function loadPublicProducts(){
+  try{
+    const manifestResponse =
+      await fetch(`products/index.json?ts=${Date.now()}`,{cache:"no-store"});
+
+    if(!manifestResponse.ok){
+      manifestData = {products:[]};
+      loadedProducts = [];
+      renderDynamicProducts();
+      return;
+    }
+
+    manifestData = await manifestResponse.json();
+
+    const list = Array.isArray(manifestData.products)
+      ? manifestData.products
+      : [];
+
+    const products = await Promise.all(
+      list.map(async item=>{
+        try{
+          const response =
+            await fetch(`${item.file}?ts=${Date.now()}`,{cache:"no-store"});
+
+          if(!response.ok) return null;
+
+          const product = await response.json();
+
+          return {
+            ...product,
+            _file:item.file,
+            _slug:item.slug
+          };
+
+        }catch{
+          return null;
+        }
+      })
+    );
+
+    loadedProducts = products.filter(Boolean);
+
+    renderDynamicProducts();
+
+  }catch(error){
+    console.error(error);
+    loadedProducts = [];
+    renderDynamicProducts();
+  }
+}
+
+
+function makeVideoCard(video,index){
+  const src = video?.src || "";
+  const title = video?.title || `Instruction Video ${index+1}`;
+
+  let player = `<span>Add video source for Video ${index+1}</span>`;
+
+  if(src){
+
+    if(src.includes("youtube.com") || src.includes("youtu.be")){
+
+      let embed = src;
+
+      if(src.includes("watch?v=")){
+        embed = src.replace("watch?v=","embed/");
+      }
+
+      if(src.includes("youtu.be/")){
+        embed = src.replace("youtu.be/","youtube.com/embed/");
+      }
+
+      player =
+        `<iframe src="${escapeHtml(embed)}"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>`;
+
+    }else{
+
+      player = `
+        <video controls preload="metadata">
+          <source src="${escapeHtml(src)}" type="video/mp4">
+        </video>
+      `;
+    }
+  }
+
+  return `
+    <article class="video-card">
+
+      <div class="video-frame">
+        ${player}
+      </div>
+
+      <span class="tag">Video ${index+1}</span>
+
+      <h3>${escapeHtml(title)}</h3>
+
+    </article>
+  `;
+}
+
+
+function renderDynamicProducts(){
+  document.querySelectorAll(".dynamic-tab").forEach(tab=>tab.remove());
+  dynamicPages.innerHTML = "";
+
+  loadedProducts.forEach(product=>{
+
+    const slug = product._slug || slugify(product.name);
+    const id = "product-" + slug;
+
+    const tab = document.createElement("button");
+
+    tab.className = "tab-btn dynamic-tab";
+    tab.dataset.page = id;
+    tab.textContent = product.name;
+
+    nav.appendChild(tab);
+
+
+    const section = document.createElement("section");
+
+    section.id = id;
+    section.className = "page dynamic-product-page";
+
+
+    const videos =
+      Array.isArray(product.videos)
+      ? product.videos
+      : [];
+
+
+    const layoutClass =
+      product.layout === "single"
+      ? ""
+      : "video-grid";
+
+
+    const singleStyle =
+      product.layout === "single"
+      ? 'style="display:grid;gap:18px;max-width:900px"'
+      : "";
+
+
+    section.innerHTML = `
+
+      <div class="hero">
+
+        <div class="eyebrow">
+          ${escapeHtml(product.category || "Instruction Page")}
+        </div>
+
+        <h1>
+          ${escapeHtml(product.pageTitle || product.name)}
+        </h1>
+
+        ${
+          product.description
+          ? `<p>${escapeHtml(product.description)}</p>`
+          : ""
+        }
+
+        ${
+          product.targetAge
+          ? `<p><strong>Suggested age:</strong> ${escapeHtml(product.targetAge)}</p>`
+          : ""
+        }
+
+        ${
+          product.extraNotes
+          ? `<p><strong>Additional notes:</strong> ${escapeHtml(product.extraNotes)}</p>`
+          : ""
+        }
+
+      </div>
+
+      <div class="${layoutClass}" ${singleStyle}>
+        ${videos.map(makeVideoCard).join("")}
+      </div>
+    `;
+
+    dynamicPages.appendChild(section);
+  });
+
+  renderManager();
+}
+
+
+/* ------------------------------
+   GITHUB CONFIG
+   ------------------------------ */
+
+function getGitHubConfig(){
+  return {
+    owner: document.getElementById("ghOwner").value.trim(),
+    repo: document.getElementById("ghRepo").value.trim(),
+    branch: document.getElementById("ghBranch").value.trim() || "main",
+    token: document.getElementById("ghToken").value.trim()
+  };
+}
+
+
+function restoreGitHubSettings(){
+  document.getElementById("ghOwner").value =
+    localStorage.getItem("nildaGithubOwner") || "";
+
+  document.getElementById("ghRepo").value =
+    localStorage.getItem("nildaGithubRepo") || "";
+
+  document.getElementById("ghBranch").value =
+    localStorage.getItem("nildaGithubBranch") || "main";
+
+  document.getElementById("ghToken").value =
+    sessionStorage.getItem("nildaGithubToken") || "";
+}
+
+
+function saveGitHubSettings(){
+  const config = getGitHubConfig();
+
+  localStorage.setItem("nildaGithubOwner",config.owner);
+  localStorage.setItem("nildaGithubRepo",config.repo);
+  localStorage.setItem("nildaGithubBranch",config.branch);
+
+  /* Token intentionally stored only for this browser session */
+  sessionStorage.setItem("nildaGithubToken",config.token);
+
+  connectionStatus.textContent =
+    "Repository settings saved for this browser session.";
+}
+
+
+document.getElementById("saveConnectionBtn")
+  .addEventListener("click",saveGitHubSettings);
+
+
+function validateConfig(requireToken=true){
+  const config = getGitHubConfig();
+
+  if(!config.owner || !config.repo || !config.branch){
+    throw new Error("Enter the GitHub owner, repository and branch.");
+  }
+
+  if(requireToken && !config.token){
+    throw new Error("Enter your GitHub token.");
+  }
+
+  return config;
+}
+
+
+function encodedPath(path){
+  return path
+    .split("/")
+    .map(encodeURIComponent)
+    .join("/");
+}
+
+
+function utf8ToBase64(text){
+  const bytes = new TextEncoder().encode(text);
+
+  let binary = "";
+
+  bytes.forEach(byte=>{
+    binary += String.fromCharCode(byte);
+  });
+
+  return btoa(binary);
+}
+
+
+function base64ToUtf8(base64){
+  const clean = base64.replace(/\n/g,"");
+  const binary = atob(clean);
+
+  const bytes =
+    Uint8Array.from(binary,char=>char.charCodeAt(0));
+
+  return new TextDecoder().decode(bytes);
+}
+
+
+async function githubRequest(url,options={}){
+  const config = validateConfig(true);
+
+  const response = await fetch(url,{
+    ...options,
+    headers:{
+      "Accept":"application/vnd.github+json",
+      "Authorization":`Bearer ${config.token}`,
+      "X-GitHub-Api-Version":"2022-11-28",
+      ...(options.headers || {})
+    }
+  });
+
+  if(response.status === 204){
+    return null;
+  }
+
+  const body = await response.json().catch(()=>null);
+
+  if(!response.ok){
+    const message =
+      body?.message ||
+      `GitHub request failed with status ${response.status}`;
+
+    const error = new Error(message);
+    error.status = response.status;
+    throw error;
+  }
+
+  return body;
+}
+
+
+function contentsApiUrl(path){
+  const config = validateConfig(true);
+
+  return `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${encodedPath(path)}`;
+}
+
+
+async function getRepoFile(path){
+  const config = validateConfig(true);
+
+  const url =
+    `${contentsApiUrl(path)}?ref=${encodeURIComponent(config.branch)}`;
+
+  try{
+    return await githubRequest(url,{method:"GET"});
+  }catch(error){
+    if(error.status === 404){
+      return null;
+    }
+    throw error;
+  }
+}
+
+
+async function writeRepoFile(path,text,commitMessage){
+  const config = validateConfig(true);
+
+  const existing = await getRepoFile(path);
+
+  const body = {
+    message: commitMessage,
+    content: utf8ToBase64(text),
+    branch: config.branch
+  };
+
+  if(existing?.sha){
+    body.sha = existing.sha;
+  }
+
+  return await githubRequest(
+    contentsApiUrl(path),
+    {
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(body)
+    }
+  );
+}
+
+
+async function deleteRepoFile(path,commitMessage){
+  const config = validateConfig(true);
+
+  const existing = await getRepoFile(path);
+
+  if(!existing){
+    return;
+  }
+
+  return await githubRequest(
+    contentsApiUrl(path),
+    {
+      method:"DELETE",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        message:commitMessage,
+        sha:existing.sha,
+        branch:config.branch
+      })
+    }
+  );
+}
+
+
+async function getManifestFromRepo(){
+  const existing = await getRepoFile("products/index.json");
+
+  if(!existing){
+    return {
+      data:{products:[]},
+      sha:null
+    };
+  }
+
+  const text = base64ToUtf8(existing.content);
+
+  let data;
+
+  try{
+    data = JSON.parse(text);
+  }catch{
+    data = {products:[]};
+  }
+
+  if(!Array.isArray(data.products)){
+    data.products = [];
+  }
+
+  return {
+    data,
+    sha:existing.sha
+  };
+}
+
+
+/* ------------------------------
+   CONNECTION TEST
+   ------------------------------ */
+
+document.getElementById("testConnectionBtn")
+  .addEventListener("click",async()=>{
+
+    connectionStatus.textContent = "Testing GitHub connection...";
+
+    try{
+      const config = validateConfig(true);
+
+      const url =
+        `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}`;
+
+      const repo = await githubRequest(url,{method:"GET"});
+
+      connectionStatus.textContent =
+        `Connected to ${repo.full_name}.`;
+
+      saveGitHubSettings();
+
+      await loadManagerFromGitHub();
+
+    }catch(error){
+      connectionStatus.innerHTML =
+        `<span class="error">${escapeHtml(error.message)}</span>`;
+    }
+  });
+
+
+/* ------------------------------
+   CREATE PRODUCT
+   ------------------------------ */
+
+document.getElementById("createBtn")
+  .addEventListener("click",async()=>{
+
+    saveStatus.textContent = "";
+
+    try{
+      validateConfig(true);
+    }catch(error){
+      saveStatus.innerHTML =
+        `<span class="error">${escapeHtml(error.message)}</span>`;
+      return;
+    }
+
+    const product = collectFormData();
+
+    if(!product.name){
+      saveStatus.innerHTML =
+        '<span class="error">Enter the product/project name.</span>';
+      return;
+    }
+
+    const slug = slugify(product.name);
+    const productFile = `products/${slug}.json`;
+
+    product.slug = slug;
+    product.updatedAt = new Date().toISOString();
+
+    saveStatus.textContent =
+      `Saving ${product.name} to GitHub...`;
+
+    try{
+      /* 1. Save product JSON */
+      await writeRepoFile(
+        productFile,
+        JSON.stringify(product,null,2),
+        `Add or update product: ${product.name}`
+      );
+
+      /* 2. Load and update manifest */
+      const manifestResult = await getManifestFromRepo();
+      const manifest = manifestResult.data;
+
+      manifest.products =
+        manifest.products.filter(item=>item.slug !== slug);
+
+      manifest.products.push({
+        slug,
+        name:product.name,
+        file:productFile
+      });
+
+      manifest.products.sort((a,b)=>
+        a.name.localeCompare(b.name)
+      );
+
+      /* 3. Save manifest */
+      await writeRepoFile(
+        "products/index.json",
+        JSON.stringify(manifest,null,2),
+        `Update product index for ${product.name}`
+      );
+
+      saveStatus.textContent =
+        `"${product.name}" was saved in the GitHub repository. GitHub Pages may take a short time to publish the new commit.`;
+
+      clearProductForm();
+
+      /* Show it immediately in current browser */
+      loadedProducts =
+        loadedProducts.filter(item=>
+          (item._slug || item.slug) !== slug
+        );
+
+      loadedProducts.push({
+        ...product,
+        _slug:slug,
+        _file:productFile
+      });
+
+      manifestData = manifest;
+
+      renderDynamicProducts();
+      renderManager();
+
+    }catch(error){
+      saveStatus.innerHTML =
+        `<span class="error">${escapeHtml(error.message)}</span>`;
+    }
+  });
+
+
+/* ------------------------------
+   MANAGE / DELETE
+   ------------------------------ */
+
+function renderManager(){
+  manageList.innerHTML = "";
+
+  if(!loadedProducts.length){
+    manageList.innerHTML =
+      '<div class="empty-note">No custom product pages are currently loaded.</div>';
+    return;
+  }
+
+  loadedProducts.forEach(product=>{
+
+    const slug = product._slug || product.slug || slugify(product.name);
+
+    const row = document.createElement("div");
+    row.className = "page-row";
+
+
+    const info = document.createElement("div");
+
+    info.innerHTML = `
+      <strong>${escapeHtml(product.name)}</strong>
+      <small>${escapeHtml(product.pageTitle || product.name)}</small>
+    `;
+
+
+    const controls = document.createElement("div");
+
+
+    const openBtn = document.createElement("button");
+
+    openBtn.className = "secondary";
+    openBtn.textContent = "Open";
+
+    openBtn.onclick = ()=>{
+      showPage("product-" + slug);
+    };
+
+
+    const deleteBtn = document.createElement("button");
+
+    deleteBtn.className = "danger";
+    deleteBtn.textContent = "Delete";
+    deleteBtn.style.marginLeft = "8px";
+
+    deleteBtn.onclick = ()=>{
+      deleteProductFromGitHub(product);
+    };
+
+
+    controls.appendChild(openBtn);
+    controls.appendChild(deleteBtn);
+
+    row.appendChild(info);
+    row.appendChild(controls);
+
+    manageList.appendChild(row);
+  });
+}
+
+
+async function loadManagerFromGitHub(){
+  try{
+    const result = await getManifestFromRepo();
+    const manifest = result.data;
+
+    const repoProducts = [];
+
+    for(const item of manifest.products){
+      const file = await getRepoFile(item.file);
+
+      if(!file) continue;
+
+      try{
+        const product =
+          JSON.parse(base64ToUtf8(file.content));
+
+        repoProducts.push({
+          ...product,
+          _slug:item.slug,
+          _file:item.file
+        });
+
+      }catch{}
+    }
+
+    loadedProducts = repoProducts;
+    manifestData = manifest;
+
+    renderDynamicProducts();
+
+  }catch(error){
+    connectionStatus.innerHTML =
+      `<span class="error">${escapeHtml(error.message)}</span>`;
+  }
+}
+
+
+async function deleteProductFromGitHub(product){
+  const slug =
+    product._slug ||
+    product.slug ||
+    slugify(product.name);
+
+  const file =
+    product._file ||
+    `products/${slug}.json`;
+
+  if(!confirm(`Delete "${product.name}" from the GitHub repository?`)){
+    return;
+  }
+
+  try{
+    validateConfig(true);
+
+    saveStatus.textContent =
+      `Deleting ${product.name}...`;
+
+    /* Remove product file */
+    await deleteRepoFile(
+      file,
+      `Delete product: ${product.name}`
+    );
+
+    /* Remove from manifest */
+    const manifestResult = await getManifestFromRepo();
+    const manifest = manifestResult.data;
+
+    manifest.products =
+      manifest.products.filter(item=>item.slug !== slug);
+
+    await writeRepoFile(
+      "products/index.json",
+      JSON.stringify(manifest,null,2),
+      `Remove ${product.name} from product index`
+    );
+
+    loadedProducts =
+      loadedProducts.filter(item=>
+        (item._slug || item.slug || slugify(item.name)) !== slug
+      );
+
+    manifestData = manifest;
+
+    renderDynamicProducts();
+
+    showPage("developers");
+
+    saveStatus.textContent =
+      `"${product.name}" was deleted from GitHub.`;
+
+  }catch(error){
+    saveStatus.innerHTML =
+      `<span class="error">${escapeHtml(error.message)}</span>`;
+  }
+}
+
+
+/* ------------------------------
+   STARTUP
+   ------------------------------ */
+
+restoreGitHubSettings();
+
+document.getElementById("year").textContent =
+  new Date().getFullYear();
+
+loadPublicProducts();
+
+</script>
+
+</body>
+</html>
