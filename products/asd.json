@@ -1,0 +1,25 @@
+{
+  "name": "asd",
+  "pageTitle": "adf",
+  "category": "Science Kit",
+  "targetAge": "adf",
+  "description": "asdf",
+  "extraNotes": "",
+  "layout": "grid",
+  "videos": [
+    {
+      "title": "a",
+      "src": "a"
+    },
+    {
+      "title": "b",
+      "src": "b"
+    },
+    {
+      "title": "c",
+      "src": "c"
+    }
+  ],
+  "slug": "asd",
+  "updatedAt": "2026-09-20T14:48:51.901Z"
+}
