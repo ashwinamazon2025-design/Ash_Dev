@@ -24,7 +24,9 @@
       position:sticky; top:0; z-index:20; backdrop-filter:blur(14px);
     }
     .topbar{max-width:1200px;margin:auto;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
-    .brand{font-weight:900;letter-spacing:.06em;font-size:1.25rem}
+    .brand-wrap{display:flex;align-items:center;gap:14px;min-width:0}
+    .site-logo{width:76px;height:76px;object-fit:contain;display:block;flex:0 0 auto;border-radius:14px}
+    .brand{font-weight:900;letter-spacing:.06em;font-size:1.25rem;white-space:nowrap}
     .brand span{color:var(--accent)}
     .badge{padding:7px 10px;border:1px solid #22424a;border-radius:999px;color:var(--accent);font-size:.78rem;font-weight:800}
     main{max-width:1200px;margin:auto;padding:34px 22px 70px}
@@ -63,6 +65,8 @@
     pre{white-space:pre-wrap;overflow:auto;background:#070707;border:1px solid #242424;border-radius:12px;padding:12px;color:#ddd}
     footer{border-top:1px solid var(--line);padding:24px;text-align:center;color:#777}
     @media(max-width:820px){
+      .site-logo{width:62px;height:62px}
+      .brand{font-size:1rem;white-space:normal}
       .layout,.form-grid,.video-grid{grid-template-columns:1fr}
       .page-row{align-items:flex-start;flex-direction:column}
     }
@@ -71,7 +75,10 @@
 <body>
 <header>
   <div class="topbar">
-    <div class="brand">NILDA <span>Developer Console</span></div>
+    <div class="brand-wrap">
+      <img class="site-logo" src="logo.png" alt="NILDA logo">
+      <div class="brand">NILDA <span>Developer Console</span></div>
+    </div>
     <div class="badge">Separate Developer Repository</div>
   </div>
 </header>
