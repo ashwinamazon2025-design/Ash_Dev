@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NILDA Instruction Hub</title>
+  <style>
+    :root{
+      --bg:#050505;
+      --panel:#111111;
+      --panel2:#171717;
+      --text:#f5f5f5;
+      --muted:#a7a7a7;
+      --line:#2a2a2a;
+      --accent:#00d4ff;
+      --accent2:#8cff3f;
+      --danger:#ff5c7a;
+      --shadow:0 12px 40px rgba(0,0,0,.45);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top left, rgba(0,212,255,.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(140,255,63,.08), transparent 24%),
+        var(--bg);
+      color:var(--text);
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+    }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:50;
+      backdrop-filter:blur(14px);
+      background:rgba(5,5,5,.88);
+      border-bottom:1px solid var(--line);
+    }
+
+    .topbar{
+      max-width:1250px;
+      margin:auto;
+      padding:18px 22px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      flex-wrap:wrap;
+    }
+
+    .brand{
+      font-size:1.35rem;
+      font-weight:800;
+      letter-spacing:.08em;
+    }
+
+    .brand span{color:var(--accent)}
+
+    nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .tab-btn{
+      border:1px solid var(--line);
+      background:#0b0b0b;
+      color:var(--text);
+      padding:11px 15px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:700;
+      transition:.2s ease;
+    }
+
+    .tab-btn:hover,
+    .tab-btn.active{
+      border-color:var(--accent);
+      color:var(--accent);
+      transform:translateY(-1px);
+      box-shadow:0 0 0 3px rgba(0,212,255,.08);
+    }
+
+    main{
+      max-width:1250px;
+      margin:auto;
+      padding:34px 22px 70px;
+    }
+
+    .page{display:none;animation:fade .25s ease}
+    .page.active{display:block}
+
+    @keyframes fade{
+      from{opacity:.2;transform:translateY(6px)}
+      to{opacity:1;transform:none}
+    }
+
+    .hero{
+      background:linear-gradient(135deg,#0e0e0e,#171717);
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:34px;
+      box-shadow:var(--shadow);
+      margin-bottom:28px;
+    }
+
+    .eyebrow{
+      color:var(--accent);
+      text-transform:uppercase;
+      letter-spacing:.16em;
+      font-size:.78rem;
+      font-weight:800;
+    }
+
+    h1{
+      font-size:clamp(2rem,4vw,4rem);
+      margin:.25em 0 .2em;
+      line-height:1.02;
+    }
+
+    h2{margin:0 0 12px;font-size:1.45rem}
+    h3{margin:0}
+    p{color:var(--muted);line-height:1.65}
+
+    .video-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:18px;
+    }
+
+    .video-card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+
+    .video-frame{
+      aspect-ratio:16/9;
+      background:
+        linear-gradient(135deg,rgba(0,212,255,.08),rgba(140,255,63,.05)),
+        #080808;
+      border:1px dashed #3a3a3a;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      color:#777;
+      overflow:hidden;
+    }
+
+    video,iframe{
+      width:100%;
+      height:100%;
+      border:0;
+      border-radius:14px;
+      background:#000;
+    }
+
+    .video-card h3{margin:14px 0 6px}
+
+    .tag{
+      display:inline-block;
+      margin-top:8px;
+      padding:6px 9px;
+      border-radius:999px;
+      background:#0d2024;
+      color:var(--accent);
+      font-size:.75rem;
+      font-weight:800;
+      border:1px solid #17353c;
+    }
+
+    .developer-layout{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) minmax(320px,.7fr);
+      gap:22px;
+      align-items:start;
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:22px;
+      box-shadow:var(--shadow);
+    }
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+    }
+
+    .full{grid-column:1/-1}
+
+    label{
+      display:block;
+      margin-bottom:7px;
+      font-size:.9rem;
+      color:#d8d8d8;
+      font-weight:700;
+    }
+
+    input,textarea,select{
+      width:100%;
+      background:#090909;
+      color:var(--text);
+      border:1px solid #303030;
+      border-radius:12px;
+      padding:12px 13px;
+      outline:none;
+      transition:.2s;
+    }
+
+    input:focus,textarea:focus,select:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(0,212,255,.08);
+    }
+
+    textarea{min-height:100px;resize:vertical}
+
+    .video-input{
+      background:#0b0b0b;
+      border:1px solid #262626;
+      padding:14px;
+      border-radius:14px;
+      margin-top:10px;
+    }
+
+    .video-input-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:18px;
+    }
+
+    button.primary,
+    button.secondary,
+    button.danger{
+      border:0;
+      padding:12px 16px;
+      border-radius:12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    button.primary{background:var(--accent);color:#001014}
+    button.secondary{background:#222;color:#fff;border:1px solid #3a3a3a}
+    button.danger{background:var(--danger);color:#fff}
+
+    .checklist{
+      list-style:none;
+      padding:0;
+      margin:0;
+    }
+
+    .checklist li{
+      border-bottom:1px solid #222;
+      padding:11px 0;
+      color:#c8c8c8;
+    }
+
+    .checklist li::before{
+      content:"✓";
+      color:var(--accent2);
+      font-weight:900;
+      margin-right:9px;
+    }
+
+    .status{
+      margin-top:15px;
+      min-height:24px;
+      color:var(--accent2);
+      font-weight:700;
+    }
+
+    .generated-banner{
+      margin-top:22px;
+      padding:16px;
+      border:1px solid #204128;
+      background:#0d1b10;
+      color:#bfffa1;
+      border-radius:12px;
+      display:none;
+    }
+
+    .page-manager{
+      margin-top:22px;
+      border-top:1px solid var(--line);
+      padding-top:20px;
+    }
+
+    .page-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 0;
+      border-bottom:1px solid #232323;
+    }
+
+    .page-row small{
+      display:block;
+      color:#888;
+      margin-top:3px;
+    }
+
+    .empty-note{
+      color:#777;
+      font-size:.95rem;
+    }
+
+    footer{
+      border-top:1px solid var(--line);
+      color:#777;
+      padding:24px 22px;
+      text-align:center;
+      background:#070707;
+    }
+
+    code{
+      background:#0b0b0b;
+      border:1px solid #222;
+      padding:2px 6px;
+      border-radius:6px;
+      color:#d5d5d5;
+    }
+
+    @media(max-width:820px){
+      .developer-layout{grid-template-columns:1fr}
+      .form-grid,.video-input-grid{grid-template-columns:1fr}
+      .hero{padding:24px}
+      .page-row{align-items:flex-start;flex-direction:column}
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="topbar">
+    <div class="brand">NILDA <span>Instruction Hub</span></div>
+    <nav id="mainNav">
+      <button class="tab-btn active" data-page="developers">Developers</button>
+      <button class="tab-btn" data-page="robotics">DIY Robotics Kit</button>
+      <button class="tab-btn" data-page="mandala">Mandala Coaster Art</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- DEVELOPERS -->
+  <section id="developers" class="page active">
+    <div class="hero">
+      <div class="eyebrow">Future Product Page Builder</div>
+      <h1>Developers Page</h1>
+      <p>
+        Use this page whenever a new product is added. Enter the product details,
+        decide how many instructional videos are needed, and generate a new page automatically.
+        Custom pages are saved in this browser.
+      </p>
+    </div>
+
+    <div class="developer-layout">
+
+      <div class="panel">
+        <h2>Create a New Product Page</h2>
+
+        <div class="form-grid">
+
+          <div>
+            <label for="projectName">What is the name of the project/product?</label>
+            <input id="projectName" placeholder="Example: Solar Rover Kit">
+          </div>
+
+          <div>
+            <label for="pageTitle">What should the page title be?</label>
+            <input id="pageTitle" placeholder="Example: Solar Rover Instructions">
+          </div>
+
+          <div>
+            <label for="category">Product category</label>
+            <select id="category">
+              <option>Robotics</option>
+              <option>Electronics</option>
+              <option>Arts & Crafts</option>
+              <option>Educational Toy</option>
+              <option>Science Kit</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="targetAge">Target age group</label>
+            <input id="targetAge" placeholder="Example: 7–12 years">
+          </div>
+
+          <div>
+            <label for="videoCount">How many videos are to be uploaded?</label>
+            <input id="videoCount" type="number" min="1" max="50" value="3">
+          </div>
+
+          <div>
+            <label for="layoutStyle">Preferred video layout</label>
+            <select id="layoutStyle">
+              <option value="grid">Video Grid</option>
+              <option value="single">Single Column</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label for="description">Short product description</label>
+            <textarea id="description" placeholder="Describe the product and what the user will learn."></textarea>
+          </div>
+
+          <div class="full">
+            <label>Video details</label>
+            <div id="videoFields"></div>
+          </div>
+
+          <div class="full">
+            <label for="extraNotes">Anything else needed on the page?</label>
+            <textarea id="extraNotes" placeholder="Examples: safety warning, manual link, QR code, parts list, troubleshooting, support details, etc."></textarea>
+          </div>
+
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="generateBtn">Generate New Product Page</button>
+          <button class="secondary" id="saveBtn">Save Draft</button>
+          <button class="secondary" id="exportBtn">Export Setup</button>
+        </div>
+
+        <div id="status" class="status"></div>
+        <div id="generatedBanner" class="generated-banner"></div>
+
+        <div class="page-manager">
+          <h2>Manage Added Pages</h2>
+          <p>Delete any page that was created through the Developers tab.</p>
+          <div id="pageManagerList"></div>
+        </div>
+
+      </div>
+
+      <aside class="panel">
+        <h2>Recommended Questions</h2>
+        <p>Useful information to collect before creating a new product page:</p>
+
+        <ul class="checklist">
+          <li>Product or project name</li>
+          <li>Page title</li>
+          <li>Product category</li>
+          <li>Target age group</li>
+          <li>Short product description</li>
+          <li>Number of instruction videos</li>
+          <li>Title of every video</li>
+          <li>Video file name or URL</li>
+          <li>Preferred video order</li>
+          <li>Safety instructions or warnings</li>
+          <li>Product image or cover image</li>
+          <li>Downloadable manual or PDF link</li>
+          <li>Troubleshooting information</li>
+          <li>Support/contact information</li>
+          <li>QR-code destination</li>
+        </ul>
+
+        <p style="margin-top:18px">
+          For GitHub Pages, upload this file as <code>index.html</code> in the root of the repository.
+          If videos are stored in a folder, paths can look like <code>videos/project1.mp4</code>.
+        </p>
+      </aside>
+
+    </div>
+  </section>
+
+
+  <!-- DIY ROBOTICS -->
+  <section id="robotics" class="page">
+    <div class="hero">
+      <div class="eyebrow">Instruction Videos</div>
+      <h1>DIY Robotic & Electronic Kit</h1>
+      <p>
+        Step-by-step instructional videos for assembling, connecting and testing
+        robotics and electronics projects.
+      </p>
+    </div>
+
+    <div class="video-grid">
+
+      <article class="video-card">
+        <div class="video-frame">
+          <video controls preload="metadata">
+            <source src="videos/robotics-project-1.mp4" type="video/mp4">
+          </video>
+        </div>
+        <span class="tag">Project 1</span>
+        <h3>Instruction Video 1</h3>
+        <p>Replace the video path with your actual MP4 file.</p>
+      </article>
+
+      <article class="video-card">
+        <div class="video-frame">
+          <video controls preload="metadata">
+            <source src="videos/robotics-project-2.mp4" type="video/mp4">
+          </video>
+        </div>
+        <span class="tag">Project 2</span>
+        <h3>Instruction Video 2</h3>
+        <p>Add your second project instruction video here.</p>
+      </article>
+
+      <article class="video-card">
+        <div class="video-frame">
+          <video controls preload="metadata">
+            <source src="videos/robotics-project-3.mp4" type="video/mp4">
+          </video>
+        </div>
+        <span class="tag">Project 3</span>
+        <h3>Instruction Video 3</h3>
+        <p>Add your third project instruction video here.</p>
+      </article>
+
+    </div>
+  </section>
+
+
+  <!-- MANDALA -->
+  <section id="mandala" class="page">
+    <div class="hero">
+      <div class="eyebrow">Art Instruction Videos</div>
+      <h1>Mandala Coaster Art</h1>
+      <p>
+        Follow the videos to create colorful Mandala coaster designs step by step.
+      </p>
+    </div>
+
+    <div class="video-grid">
+
+      <article class="video-card">
+        <div class="video-frame">
+          <video controls preload="metadata">
+            <source src="videos/mandala-step-1.mp4" type="video/mp4">
+          </video>
+        </div>
+        <span class="tag">Step 1</span>
+        <h3>Getting Started</h3>
+        <p>Introduce the coaster, materials and design.</p>
+      </article>
+
+      <article class="video-card">
+        <div class="video-frame">
+          <video controls preload="metadata">
+            <source src="videos/mandala-step-2.mp4" type="video/mp4">
+          </video>
+        </div>
+        <span class="tag">Step 2</span>
+        <h3>Create the Pattern</h3>
+        <p>Show the Mandala pattern-making process.</p>
+      </article>
+
+      <article class="video-card">
+        <div class="video-frame">
+          <video controls preload="metadata">
+            <source src="videos/mandala-step-3.mp4" type="video/mp4">
+          </video>
+        </div>
+        <span class="tag">Step 3</span>
+        <h3>Finish the Coaster</h3>
+        <p>Complete the artwork and finishing steps.</p>
+      </article>
+
+    </div>
+  </section>
+
+  <div id="customPages"></div>
+
+</main>
+
+<footer>
+  © <span id="year"></span> NILDA Instruction Hub
+</footer>
+
+
+<script>
+
+const nav = document.getElementById('mainNav');
+const customPagesContainer = document.getElementById('customPages');
+const videoCount = document.getElementById('videoCount');
+const videoFields = document.getElementById('videoFields');
+const statusEl = document.getElementById('status');
+const generatedBanner = document.getElementById('generatedBanner');
+const pageManagerList = document.getElementById('pageManagerList');
+
+function slugify(text){
+  return (text || 'new-product')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g,'-')
+    .replace(/^-+|-+$/g,'');
+}
+
+function escapeHtml(value=''){
+  return String(value).replace(/[&<>"']/g, c => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#039;'
+  }[c]));
+}
+
+function showPage(pageId){
+  document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+  const page = document.getElementById(pageId);
+  const btn = document.querySelector(`.tab-btn[data-page="${pageId}"]`);
+
+  if(page) page.classList.add('active');
+  if(btn) btn.classList.add('active');
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+nav.addEventListener('click', e => {
+  if(e.target.matches('.tab-btn')){
+    showPage(e.target.dataset.page);
+  }
+});
+
+function buildVideoFields(){
+  let count = Math.max(1, Math.min(50, Number(videoCount.value) || 1));
+  videoCount.value = count;
+  videoFields.innerHTML = '';
+
+  for(let i=1;i<=count;i++){
+    const box = document.createElement('div');
+    box.className = 'video-input';
+
+    box.innerHTML = `
+      <strong>Video ${i}</strong>
+      <div class="video-input-grid" style="margin-top:10px">
+        <div>
+          <label>Video title</label>
+          <input class="video-title" placeholder="Example: Assemble the chassis">
+        </div>
+        <div>
+          <label>Video file path or URL</label>
+          <input class="video-src" placeholder="videos/example.mp4">
+        </div>
+      </div>
+    `;
+
+    videoFields.appendChild(box);
+  }
+}
+
+videoCount.addEventListener('input', buildVideoFields);
+buildVideoFields();
+
+function collectFormData(){
+  const titles = [...document.querySelectorAll('.video-title')];
+  const sources = [...document.querySelectorAll('.video-src')];
+
+  return {
+    name: document.getElementById('projectName').value.trim(),
+    pageTitle: document.getElementById('pageTitle').value.trim(),
+    category: document.getElementById('category').value,
+    age: document.getElementById('targetAge').value.trim(),
+    layout: document.getElementById('layoutStyle').value,
+    description: document.getElementById('description').value.trim(),
+    extraNotes: document.getElementById('extraNotes').value.trim(),
+    videos: titles.map((titleInput,index)=>({
+      title:titleInput.value.trim() || `Instruction Video ${index+1}`,
+      src:sources[index].value.trim()
+    }))
+  };
+}
+
+function getSavedPages(){
+  try{
+    return JSON.parse(localStorage.getItem('nildaCustomPages') || '[]');
+  }catch{
+    return [];
+  }
+}
+
+function savePages(pages){
+  localStorage.setItem('nildaCustomPages', JSON.stringify(pages));
+}
+
+function createProductPage(data, save=true){
+
+  if(!data.name){
+    statusEl.textContent = 'Please enter a product/project name first.';
+    return;
+  }
+
+  const id = 'product-' + slugify(data.name);
+
+  document.getElementById(id)?.remove();
+  document.querySelector(`.tab-btn[data-page="${id}"]`)?.remove();
+
+  const tab = document.createElement('button');
+  tab.className = 'tab-btn';
+  tab.dataset.page = id;
+  tab.textContent = data.name;
+  nav.appendChild(tab);
+
+  const section = document.createElement('section');
+  section.id = id;
+  section.className = 'page';
+
+  const gridClass = data.layout === 'single' ? '' : 'video-grid';
+  const singleStyle = data.layout === 'single'
+    ? 'style="display:grid;gap:18px;max-width:900px"'
+    : '';
+
+  const videoCards = data.videos.map((video,index)=>`
+    <article class="video-card">
+      <div class="video-frame">
+        ${
+          video.src
+          ? `<video controls preload="metadata">
+               <source src="${escapeHtml(video.src)}" type="video/mp4">
+             </video>`
+          : `<span>Add video source for Video ${index+1}</span>`
+        }
+      </div>
+      <span class="tag">Video ${index+1}</span>
+      <h3>${escapeHtml(video.title)}</h3>
+    </article>
+  `).join('');
+
+  section.innerHTML = `
+    <div class="hero">
+      <div class="eyebrow">${escapeHtml(data.category || 'Instruction Page')}</div>
+      <h1>${escapeHtml(data.pageTitle || data.name)}</h1>
+      <p>${escapeHtml(data.description || 'Instruction videos for this product.')}</p>
+
+      ${data.age
+        ? `<p><strong>Suggested age:</strong> ${escapeHtml(data.age)}</p>`
+        : ''
+      }
+
+      ${data.extraNotes
+        ? `<p><strong>Additional notes:</strong> ${escapeHtml(data.extraNotes)}</p>`
+        : ''
+      }
+    </div>
+
+    <div class="${gridClass}" ${singleStyle}>
+      ${videoCards}
+    </div>
+  `;
+
+  customPagesContainer.appendChild(section);
+
+  if(save){
+    let saved = getSavedPages();
+    saved = saved.filter(item => slugify(item.name) !== slugify(data.name));
+    saved.push(data);
+    savePages(saved);
+  }
+
+  refreshPageManager();
+
+  statusEl.textContent = `Created page: ${data.name}`;
+  generatedBanner.style.display = 'block';
+  generatedBanner.innerHTML =
+    `A new tab named <strong>${escapeHtml(data.name)}</strong> has been added.`;
+
+  showPage(id);
+}
+
+function deleteProductPage(name){
+
+  const id = 'product-' + slugify(name);
+
+  if(!confirm(`Delete the page "${name}"?`)){
+    return;
+  }
+
+  let saved = getSavedPages();
+  saved = saved.filter(item => slugify(item.name) !== slugify(name));
+  savePages(saved);
+
+  document.getElementById(id)?.remove();
+  document.querySelector(`.tab-btn[data-page="${id}"]`)?.remove();
+
+  refreshPageManager();
+
+  statusEl.textContent = `Deleted page: ${name}`;
+  showPage('developers');
+}
+
+function refreshPageManager(){
+
+  const saved = getSavedPages();
+  pageManagerList.innerHTML = '';
+
+  if(!saved.length){
+    pageManagerList.innerHTML =
+      '<div class="empty-note">No custom product pages have been added yet.</div>';
+    return;
+  }
+
+  saved.forEach(item => {
+
+    const row = document.createElement('div');
+    row.className = 'page-row';
+
+    const info = document.createElement('div');
+    info.innerHTML =
+      `<strong>${escapeHtml(item.name)}</strong>
+       <small>${escapeHtml(item.pageTitle || item.name)}</small>`;
+
+    const actions = document.createElement('div');
+
+    const openBtn = document.createElement('button');
+    openBtn.className = 'secondary';
+    openBtn.textContent = 'Open';
+    openBtn.onclick = () => showPage('product-' + slugify(item.name));
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'danger';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.style.marginLeft = '8px';
+    deleteBtn.onclick = () => deleteProductPage(item.name);
+
+    actions.appendChild(openBtn);
+    actions.appendChild(deleteBtn);
+
+    row.appendChild(info);
+    row.appendChild(actions);
+
+    pageManagerList.appendChild(row);
+  });
+}
+
+document.getElementById('generateBtn').addEventListener('click',()=>{
+  createProductPage(collectFormData(),true);
+});
+
+document.getElementById('saveBtn').addEventListener('click',()=>{
+
+  const data = collectFormData();
+
+  localStorage.setItem(
+    'nildaDeveloperDraft',
+    JSON.stringify(data)
+  );
+
+  statusEl.textContent = 'Developer draft saved in this browser.';
+});
+
+document.getElementById('exportBtn').addEventListener('click',()=>{
+
+  const data = collectFormData();
+
+  const blob = new Blob(
+    [JSON.stringify(data,null,2)],
+    {type:'application/json'}
+  );
+
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download =
+    `${slugify(data.name || 'new-product')}-setup.json`;
+
+  link.click();
+
+  URL.revokeObjectURL(url);
+
+  statusEl.textContent = 'Setup exported as a JSON file.';
+});
+
+function restoreDraft(){
+
+  try{
+
+    const data =
+      JSON.parse(localStorage.getItem('nildaDeveloperDraft') || 'null');
+
+    if(!data) return;
+
+    document.getElementById('projectName').value = data.name || '';
+    document.getElementById('pageTitle').value = data.pageTitle || '';
+    document.getElementById('category').value = data.category || 'Robotics';
+    document.getElementById('targetAge').value = data.age || '';
+    document.getElementById('layoutStyle').value = data.layout || 'grid';
+    document.getElementById('description').value = data.description || '';
+    document.getElementById('extraNotes').value = data.extraNotes || '';
+
+    videoCount.value = data.videos?.length || 3;
+
+    buildVideoFields();
+
+    [...document.querySelectorAll('.video-title')]
+      .forEach((input,index)=>{
+        input.value = data.videos?.[index]?.title || '';
+      });
+
+    [...document.querySelectorAll('.video-src')]
+      .forEach((input,index)=>{
+        input.value = data.videos?.[index]?.src || '';
+      });
+
+  }catch{}
+}
+
+function restoreCustomPages(){
+
+  const saved = getSavedPages();
+
+  saved.forEach(data=>{
+    createProductPage(data,false);
+  });
+
+  refreshPageManager();
+}
+
+restoreDraft();
+restoreCustomPages();
+
+document.getElementById('year').textContent =
+  new Date().getFullYear();
+
+</script>
+
+</body>
+</html>
