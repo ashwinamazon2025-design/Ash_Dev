@@ -1,0 +1,3144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NILDA Developer Console</title>
+<style>
+    :root{
+      --bg:#050505; --panel:#111; --panel2:#171717; --text:#f5f5f5;
+      --muted:#aaa; --line:#2c2c2c; --accent:#00d4ff; --good:#8cff3f;
+      --danger:#ff5c7a; --warn:#ffc857; --shadow:0 14px 42px rgba(0,0,0,.45);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; color:var(--text);
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      background:
+        radial-gradient(circle at top left,rgba(0,212,255,.10),transparent 30%),
+        radial-gradient(circle at top right,rgba(140,255,63,.05),transparent 24%),
+        var(--bg);
+    }
+    header{
+      border-bottom:1px solid var(--line); background:rgba(5,5,5,.92);
+      position:sticky; top:0; z-index:20; backdrop-filter:blur(14px);
+    }
+    .topbar{max-width:1200px;margin:auto;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+    .brand-wrap{display:flex;align-items:center;gap:14px;min-width:0}
+    .site-logo{width:76px;height:76px;object-fit:contain;display:block;flex:0 0 auto;border-radius:14px}
+    .brand{font-weight:900;letter-spacing:.06em;font-size:1.25rem;white-space:nowrap}
+    .brand span{color:var(--accent)}
+    .badge{padding:7px 10px;border:1px solid #22424a;border-radius:999px;color:var(--accent);font-size:.78rem;font-weight:800}
+    main{max-width:1200px;margin:auto;padding:34px 22px 70px}
+    .hero,.panel{background:linear-gradient(135deg,#0d0d0d,#171717);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}
+    .hero{padding:30px;margin-bottom:22px}
+    .panel{padding:22px;background:#111}
+    h1{font-size:clamp(2rem,4vw,3.7rem);margin:.2em 0}
+    h2{margin:0 0 12px}
+    p{color:var(--muted);line-height:1.65}
+    .eyebrow{text-transform:uppercase;letter-spacing:.15em;color:var(--accent);font-size:.78rem;font-weight:900}
+    .layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:22px;align-items:start}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+    .full{grid-column:1/-1}
+    label{display:block;margin-bottom:7px;font-size:.9rem;color:#ddd;font-weight:800}
+    input,textarea,select{
+      width:100%;background:#090909;color:#fff;border:1px solid #303030;
+      border-radius:12px;padding:12px 13px;outline:none;
+    }
+    input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,.08)}
+    textarea{min-height:100px;resize:vertical}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;cursor:pointer}
+    .primary{background:var(--accent);color:#001014}
+    .secondary{background:#222;color:#fff;border:1px solid #3b3b3b}
+    .danger{background:var(--danger);color:#fff}
+    .status{min-height:24px;margin-top:14px;color:var(--good);font-weight:800}
+    .error{color:#ff879a}.warning{color:var(--warn)}
+    .section{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
+    .video-input{padding:14px;margin-top:10px;border:1px solid #282828;border-radius:14px;background:#0b0b0b}
+    .video-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .page-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid #242424}
+    .page-row small{display:block;color:#858585;margin-top:4px}
+    .empty{color:#777}
+    .help{border:1px solid #413a20;background:#171409;padding:15px;border-radius:14px}
+    code{background:#090909;border:1px solid #222;padding:2px 6px;border-radius:6px}
+    pre{white-space:pre-wrap;overflow:auto;background:#070707;border:1px solid #242424;border-radius:12px;padding:12px;color:#ddd}
+    footer{border-top:1px solid var(--line);padding:24px;text-align:center;color:#777}
+
+    /* ============================================================
+       ORGANIZED DEVELOPER CONSOLE WORKSPACE
+       ============================================================ */
+
+    main{
+      max-width:1320px;
+      padding-top:26px;
+    }
+
+    .hero{
+      padding:24px 28px;
+      margin-bottom:20px;
+    }
+
+    .hero h1{
+      font-size:clamp(2rem,3.4vw,3rem);
+      margin:.15em 0;
+    }
+
+    .hero p{
+      max-width:850px;
+      margin-bottom:0;
+    }
+
+    .console-shell{
+      display:grid;
+      grid-template-columns:235px minmax(0,1fr);
+      gap:20px;
+      align-items:start;
+    }
+
+    .console-nav{
+      position:sticky;
+      top:116px;
+
+      padding:14px;
+
+      border:1px solid var(--line);
+      border-radius:20px;
+
+      background:
+        linear-gradient(180deg,#101010,#0b0b0b);
+
+      box-shadow:var(--shadow);
+    }
+
+    .console-nav-title{
+      padding:7px 9px 12px;
+
+      color:#777;
+
+      font-size:.7rem;
+      font-weight:900;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+    }
+
+    .console-nav button{
+      width:100%;
+
+      display:flex;
+      align-items:center;
+      gap:11px;
+
+      margin:3px 0;
+      padding:12px 13px;
+
+      border:1px solid transparent;
+      border-radius:12px;
+
+      background:transparent;
+      color:#cfcfcf;
+
+      text-align:left;
+
+      font-size:.88rem;
+      font-weight:800;
+
+      transition:
+        background .18s ease,
+        border-color .18s ease,
+        color .18s ease,
+        transform .18s ease;
+    }
+
+    .console-nav button:hover{
+      background:#171717;
+      border-color:#303030;
+      color:#fff;
+    }
+
+    .console-nav button.active{
+      background:rgba(0,212,255,.10);
+      border-color:rgba(0,212,255,.42);
+      color:var(--accent);
+    }
+
+    .console-nav .nav-icon{
+      width:26px;
+      height:26px;
+
+      flex:0 0 26px;
+
+      display:grid;
+      place-items:center;
+
+      border:1px solid #303030;
+      border-radius:8px;
+
+      background:#090909;
+
+      color:inherit;
+
+      font-size:.78rem;
+      font-weight:900;
+    }
+
+    .console-workspace{
+      min-width:0;
+    }
+
+    .tool-panel{
+      display:none;
+
+      padding:24px;
+
+      border:1px solid var(--line);
+      border-radius:22px;
+
+      background:
+        linear-gradient(135deg,#0d0d0d,#141414);
+
+      box-shadow:var(--shadow);
+    }
+
+    .tool-panel.active{
+      display:block;
+      animation:panelIn .16s ease-out;
+    }
+
+    @keyframes panelIn{
+      from{
+        opacity:0;
+        transform:translateY(5px);
+      }
+      to{
+        opacity:1;
+        transform:none;
+      }
+    }
+
+    .tool-panel > .section:first-child{
+      margin-top:0;
+      padding-top:0;
+      border-top:0;
+    }
+
+    .tool-panel .section{
+      margin-top:0;
+      padding-top:0;
+      border-top:0;
+    }
+
+    .tool-heading{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+
+      margin-bottom:20px;
+      padding-bottom:16px;
+
+      border-bottom:1px solid var(--line);
+    }
+
+    .tool-heading h2{
+      margin:0;
+      font-size:1.45rem;
+    }
+
+    .tool-heading p{
+      margin:5px 0 0;
+      max-width:700px;
+    }
+
+    .tool-kicker{
+      margin-bottom:5px;
+
+      color:var(--accent);
+
+      font-size:.7rem;
+      font-weight:900;
+      letter-spacing:.13em;
+      text-transform:uppercase;
+    }
+
+    .taxonomy-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:18px;
+      align-items:start;
+    }
+
+    .inner-card{
+      padding:20px;
+
+      border:1px solid #292929;
+      border-radius:17px;
+
+      background:#0b0b0b;
+    }
+
+    .inner-card h2{
+      font-size:1.12rem;
+      margin-bottom:8px;
+    }
+
+    .inner-card p{
+      margin-top:0;
+      font-size:.9rem;
+    }
+
+    .product-editor-grid{
+      display:grid;
+      grid-template-columns:minmax(0,1fr);
+      gap:18px;
+    }
+
+    .workspace-note{
+      margin-bottom:18px;
+      padding:13px 15px;
+
+      border:1px solid #273b40;
+      border-radius:13px;
+
+      background:rgba(0,212,255,.055);
+
+      color:#b8d9df;
+
+      font-size:.88rem;
+      line-height:1.55;
+    }
+
+    .tool-panel .page-row{
+      padding:13px 12px;
+
+      border:1px solid transparent;
+      border-bottom:1px solid #242424;
+      border-radius:10px;
+    }
+
+    .tool-panel .page-row:hover{
+      background:#0d0d0d;
+      border-color:#292929;
+    }
+
+    .support-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+    }
+
+    .support-grid .section{
+      padding:18px;
+
+      border:1px solid #292929;
+      border-radius:16px;
+
+      background:#0b0b0b;
+    }
+
+    .support-grid .section h2{
+      font-size:1.05rem;
+    }
+
+    .support-grid .help{
+      height:100%;
+    }
+
+    .panel.organized-source{
+      padding:0;
+      border:0;
+      background:transparent;
+      box-shadow:none;
+    }
+
+    .layout.organized-layout{
+      display:block;
+    }
+
+    .section-jump{
+      scroll-margin-top:130px;
+    }
+
+
+@media(max-width:820px){
+      .site-logo{width:62px;height:62px}
+      .brand{font-size:1rem;white-space:normal}
+      .layout,.form-grid,.video-grid{grid-template-columns:1fr}
+      .page-row{align-items:flex-start;flex-direction:column}
+
+      .console-shell{
+        grid-template-columns:1fr;
+        gap:14px;
+      }
+
+      .console-nav{
+        position:sticky;
+        top:0;
+        z-index:15;
+
+        display:flex;
+        gap:7px;
+
+        overflow-x:auto;
+
+        padding:9px;
+
+        border-radius:14px;
+      }
+
+      .console-nav-title{
+        display:none;
+      }
+
+      .console-nav button{
+        width:auto;
+        min-width:max-content;
+
+        margin:0;
+        padding:10px 11px;
+      }
+
+      .console-nav .nav-icon{
+        display:none;
+      }
+
+      .tool-panel{
+        padding:18px;
+        border-radius:17px;
+      }
+
+      .tool-heading{
+        flex-direction:column;
+        margin-bottom:16px;
+      }
+
+      .taxonomy-grid,
+      .support-grid{
+        grid-template-columns:1fr;
+      }
+
+      main{
+        padding-top:20px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand-wrap">
+      <img class="site-logo" src="logo.png" alt="NILDA logo">
+      <div class="brand">NILDA <span>Developer Console</span></div>
+    </div>
+    <div class="badge">Open Developer Repository</div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="eyebrow">Website Content Manager</div>
+    <h1>Developer Console</h1>
+    <p>
+      Manage your public website from one place. Use the menu below to connect the
+      repository, organize categories, edit products, update the Home carousel and manage pages.
+    </p>
+  </section>
+<div id="developerApp" class="developer-app">
+
+  <div class="layout">
+    <section class="panel">
+      <h2>Connect to Public Website Repository</h2>
+      <div class="form-grid">
+        <div>
+          <label for="ghOwner">Repository owner</label>
+          <input id="ghOwner" placeholder="GitHub repository owner">
+        </div>
+        <div>
+          <label for="ghRepo">Public website repository name</label>
+          <input id="ghRepo" placeholder="Example: nilda-instructions">
+        </div>
+        <div>
+          <label for="ghBranch">Branch</label>
+          <input id="ghBranch" value="main">
+        </div>
+        <div>
+          <label for="ghToken">GitHub repository access token</label>
+          <input id="ghToken" type="password" placeholder="github_pat_...">
+        </div>
+      </div>
+
+      <p>
+        The repository access token below is used only when saving
+        files to GitHub and is kept in <strong>session storage</strong>.
+      </p>
+
+      <div class="actions">
+        <button class="secondary" id="rememberBtn">Use These Settings</button>
+        <button class="secondary" id="testBtn">Test Connection</button>
+        <button class="secondary" id="refreshBtn">Refresh Product List</button>
+      </div>
+      <div id="connectionStatus" class="status"></div>
+
+      <div class="section">
+        <h2>Manage Product Categories</h2>
+
+        <p>
+          Add categories here and they will automatically appear in the
+          Category drop-down below. Categories are saved in the public
+          repository as <code>content/product-categories.txt</code>.
+        </p>
+
+        <div class="form-grid">
+
+          <div>
+            <label for="newCategory">New category</label>
+            <input
+              id="newCategory"
+              placeholder="Example: Creative Art Kits"
+            >
+          </div>
+
+          <div style="display:flex;align-items:end;gap:10px">
+            <button
+              id="addCategoryBtn"
+              class="primary"
+              style="width:100%"
+            >
+              Add Category
+            </button>
+          </div>
+
+        </div>
+
+        <div class="actions">
+          <button
+            id="reloadCategoriesBtn"
+            class="secondary"
+          >
+            Reload Categories
+          </button>
+        </div>
+
+        <div
+          id="categoryManager"
+          style="margin-top:12px"
+        ></div>
+
+        <div
+          id="categoryStatus"
+          class="status"
+        ></div>
+
+      </div>
+
+
+      <div class="section">
+        <h2>Manage Product Subcategories</h2>
+
+        <p>
+          Choose a parent category, then add or remove its subcategories.
+          The Product Subcategory drop-down below changes automatically
+          when a different Category is selected.
+        </p>
+
+        <div class="form-grid">
+
+          <div>
+            <label for="subcategoryParentCategory">Parent category</label>
+            <select id="subcategoryParentCategory"></select>
+          </div>
+
+          <div>
+            <label for="newSubcategory">New subcategory</label>
+            <input
+              id="newSubcategory"
+              placeholder="Example: Sensor Projects"
+            >
+          </div>
+
+          <div style="display:flex;align-items:end;gap:10px">
+            <button
+              id="addSubcategoryBtn"
+              class="primary"
+              style="width:100%"
+            >
+              Add Subcategory
+            </button>
+          </div>
+
+        </div>
+
+        <div class="actions">
+          <button
+            id="reloadSubcategoriesBtn"
+            class="secondary"
+          >
+            Reload Subcategories
+          </button>
+        </div>
+
+        <div
+          id="subcategoryManager"
+          style="margin-top:12px"
+        ></div>
+
+        <div
+          id="subcategoryStatus"
+          class="status"
+        ></div>
+
+      </div>
+
+
+      <div class="section">
+        <h2>Create or Update a Product Page</h2>
+
+        <p>
+          Every new product saved here is automatically added to the public
+          Home page as a product button. The public Amazon page automatically
+          arranges all product buttons in a compact grid beside the carousel.
+          As more products are added, the buttons, spacing and font sizes are
+          reduced automatically so the area fits without a scrollbar.
+        </p>
+
+        <div class="form-grid">
+          <div>
+            <label for="projectName">Product / project name</label>
+            <input id="projectName" placeholder="Example: Solar Rover Kit">
+          </div>
+
+          <div>
+            <label for="pageTitle">Page title</label>
+            <input id="pageTitle" placeholder="Example: Solar Rover Instructions">
+          </div>
+
+          <div>
+            <label for="category">Category</label>
+            <select id="category"></select>
+          </div>
+
+          <div>
+            <label for="subcategory">Subcategory</label>
+            <select id="subcategory"></select>
+          </div>
+
+          <div>
+            <label for="targetAge">Target age</label>
+            <input id="targetAge" placeholder="Example: 7–12 years">
+          </div>
+
+          <div>
+            <label for="videoCount">Number of videos</label>
+            <input id="videoCount" type="number" min="1" max="50" value="3">
+          </div>
+
+          <div>
+            <label for="layoutStyle">Video layout</label>
+            <select id="layoutStyle">
+              <option value="grid">Video Grid</option>
+              <option value="single">Single Column</option>
+            </select>
+          </div>
+
+          <div class="full">
+            <label for="description">Short description</label>
+            <textarea id="description" placeholder="Describe this product or project."></textarea>
+          </div>
+
+          <div class="full">
+            <label>Video details</label>
+            <div id="videoFields"></div>
+          </div>
+
+          <div class="full">
+            <label for="extraNotes">Additional notes</label>
+            <textarea id="extraNotes" placeholder="Safety warning, PDF manual, QR code information, support details, etc."></textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="saveProductBtn">Create / Update Page</button>
+          <button class="secondary" id="clearBtn">Clear Form</button>
+        </div>
+
+        <div id="saveStatus" class="status"></div>
+      </div>
+
+      <div class="section">
+        <h2>Home Text Carousel</h2>
+
+        <p>
+          These messages appear in the small text carousel above the
+          picture carousel on the public Home page.
+        </p>
+
+        <div class="form-grid">
+
+          <div>
+            <label for="textSlideCount">Number of text slides</label>
+
+            <input
+              id="textSlideCount"
+              type="number"
+              min="1"
+              max="12"
+              value="3"
+            >
+          </div>
+
+          <div style="display:flex;align-items:end">
+            <button
+              id="loadTextCarouselBtn"
+              class="secondary"
+              style="width:100%"
+            >
+              Load Current Text
+            </button>
+          </div>
+
+          <div class="full">
+            <div id="textSlideFields"></div>
+          </div>
+
+        </div>
+
+        <div class="actions">
+
+          <button
+            id="saveTextCarouselBtn"
+            class="primary"
+          >
+            Save Text Carousel
+          </button>
+
+        </div>
+
+        <div
+          id="textCarouselStatus"
+          class="status"
+        ></div>
+
+      </div>
+
+
+      <div class="section">
+        <h2>Manage Product Pages</h2>
+        <p>These projects are stored in the public website repository. The two main Home projects are also listed here and can be edited.</p>
+        <div id="productManager"></div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="help">
+        <strong>Target repository structure</strong>
+        <p>The Developer Console will create and maintain:</p>
+        <pre>content/
+  home-text-carousel.json
+
+products/
+  index.json
+  solar-rover-kit.json
+  another-product.json</pre>
+      </div>
+
+      <div class="section">
+        <h2>Video files</h2>
+        <p>
+          Upload videos separately into the <code>videos/</code> folder of the
+          public website repository. Then enter paths such as
+          <code>videos/project1.mp4</code>.
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>GitHub Token Permission</h2>
+        <p>
+          Use a fine-grained token restricted to the public website repository with
+          <strong>Contents: Read and write</strong>.
+        </p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer>Developer repository — NILDA Instruction Hub</footer>
+
+<script>
+const videoFields = document.getElementById("videoFields");
+const videoCount = document.getElementById("videoCount");
+const connectionStatus = document.getElementById("connectionStatus");
+const saveStatus = document.getElementById("saveStatus");
+const productManager = document.getElementById("productManager");
+const categorySelect = document.getElementById("category");
+const newCategoryInput = document.getElementById("newCategory");
+const addCategoryBtn = document.getElementById("addCategoryBtn");
+const reloadCategoriesBtn = document.getElementById("reloadCategoriesBtn");
+const categoryManager = document.getElementById("categoryManager");
+const categoryStatus = document.getElementById("categoryStatus");
+const subcategorySelect = document.getElementById("subcategory");
+const subcategoryParentCategory = document.getElementById("subcategoryParentCategory");
+const newSubcategoryInput = document.getElementById("newSubcategory");
+const addSubcategoryBtn = document.getElementById("addSubcategoryBtn");
+const reloadSubcategoriesBtn = document.getElementById("reloadSubcategoriesBtn");
+const subcategoryManager = document.getElementById("subcategoryManager");
+const subcategoryStatus = document.getElementById("subcategoryStatus");
+const textSlideCount = document.getElementById("textSlideCount");
+const textSlideFields = document.getElementById("textSlideFields");
+const loadTextCarouselBtn = document.getElementById("loadTextCarouselBtn");
+const saveTextCarouselBtn = document.getElementById("saveTextCarouselBtn");
+const textCarouselStatus = document.getElementById("textCarouselStatus");
+
+
+const DEFAULT_CATEGORIES = [
+  "Robotics",
+  "Electronics",
+  "Arts & Crafts",
+  "Educational Toy",
+  "Science Kit",
+  "Other"
+];
+
+let categories = [...DEFAULT_CATEGORIES];
+
+/*
+  Stored as:
+  {
+    "Robotics": ["Sensor Projects","Motor Projects"],
+    "Arts & Crafts": ["Mandala","Painting"]
+  }
+*/
+let subcategories = {};
+
+let products = [];
+let manifest = {products:[]};
+let editingProject = null;
+
+function escapeHtml(value=""){
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[c]));
+}
+
+function slugify(text){
+  return String(text || "product")
+    .toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"");
+}
+
+function buildVideoFields(){
+  const count = Math.max(1, Math.min(50, Number(videoCount.value) || 1));
+  videoCount.value = count;
+  videoFields.innerHTML = "";
+
+  for(let i=1;i<=count;i++){
+    const div = document.createElement("div");
+    div.className = "video-input";
+    div.innerHTML = `
+      <strong>Video ${i}</strong>
+      <div class="video-grid">
+        <div>
+          <label>Video title</label>
+          <input class="video-title" placeholder="Example: Assemble the chassis">
+        </div>
+        <div>
+          <label>Video file path or URL</label>
+          <input class="video-src" placeholder="videos/example.mp4">
+        </div>
+      </div>`;
+    videoFields.appendChild(div);
+  }
+}
+
+videoCount.addEventListener("input", buildVideoFields);
+buildVideoFields();
+
+
+/* ============================================================
+   HOME TEXT CAROUSEL EDITOR
+   Saves to public repository:
+   content/home-text-carousel.json
+   ============================================================ */
+
+function buildTextSlideFields(slides=[]){
+
+  const count =
+    Math.max(
+      1,
+      Math.min(
+        12,
+        Number(textSlideCount.value) || 1
+      )
+    );
+
+  textSlideCount.value =
+    count;
+
+  textSlideFields.innerHTML =
+    "";
+
+  for(let i=0;i<count;i++){
+
+    const slide =
+      slides[i] || {};
+
+    const box =
+      document.createElement("div");
+
+    box.className =
+      "video-input";
+
+    box.innerHTML = `
+      <strong>Text Slide ${i + 1}</strong>
+
+      <div class="video-grid">
+
+        <div>
+          <label>Heading</label>
+
+          <input
+            class="home-text-title"
+            placeholder="Example: Small Projects, Big Possibilities"
+            value="${escapeHtml(slide.title || "")}"
+          >
+        </div>
+
+        <div>
+          <label>Message</label>
+
+          <input
+            class="home-text-message"
+            placeholder="Example: Build, explore and learn."
+            value="${escapeHtml(slide.text || "")}"
+          >
+        </div>
+
+      </div>
+    `;
+
+    textSlideFields
+      .appendChild(box);
+
+  }
+}
+
+
+textSlideCount.addEventListener(
+  "input",
+  ()=>{
+
+    const existing =
+      collectTextSlides();
+
+    buildTextSlideFields(
+      existing
+    );
+
+  }
+);
+
+
+function collectTextSlides(){
+
+  const titles =
+    [
+      ...document.querySelectorAll(
+        ".home-text-title"
+      )
+    ];
+
+  const messages =
+    [
+      ...document.querySelectorAll(
+        ".home-text-message"
+      )
+    ];
+
+  return titles
+    .map(
+      (input,index)=>({
+        title:
+          input.value.trim(),
+
+        text:
+          messages[index]?.value.trim() || ""
+      })
+    )
+    .filter(
+      slide =>
+        slide.title ||
+        slide.text
+    );
+}
+
+
+async function loadHomeTextCarouselEditor(){
+
+  textCarouselStatus.textContent =
+    "Loading current Home text...";
+
+  try{
+
+    const file =
+      await getFile(
+        "content/home-text-carousel.json"
+      );
+
+    if(!file){
+
+      const defaults = [
+        {
+          title:"Small Projects, Big Possibilities",
+          text:"Build, explore and learn through hands-on activities."
+        },
+        {
+          title:"Learn by Doing",
+          text:"Watch the instructions, build the project and discover how it works."
+        },
+        {
+          title:"Create Your Way",
+          text:"Explore robotics, electronics and art at your own pace."
+        }
+      ];
+
+      textSlideCount.value =
+        defaults.length;
+
+      buildTextSlideFields(
+        defaults
+      );
+
+      textCarouselStatus.textContent =
+        "No saved text-carousel file found. Default text is shown.";
+
+      return;
+    }
+
+    const data =
+      JSON.parse(
+        base64DecodeUtf8(
+          file.content
+        )
+      );
+
+    const slides =
+      Array.isArray(data.slides)
+        ? data.slides
+        : [];
+
+    textSlideCount.value =
+      Math.max(
+        1,
+        slides.length || 1
+      );
+
+    buildTextSlideFields(
+      slides
+    );
+
+    textCarouselStatus.textContent =
+      "Current Home text loaded.";
+
+  }catch(error){
+
+    textCarouselStatus.innerHTML =
+      `<span class="error">${escapeHtml(error.message)}</span>`;
+
+  }
+}
+
+
+async function saveHomeTextCarousel(){
+
+  textCarouselStatus.textContent =
+    "";
+
+  try{
+
+    validateConfig();
+
+    const slides =
+      collectTextSlides();
+
+    if(!slides.length){
+
+      throw new Error(
+        "Enter at least one text-carousel slide."
+      );
+
+    }
+
+    const data = {
+      slides,
+      updatedAt:
+        new Date().toISOString()
+    };
+
+    textCarouselStatus.textContent =
+      "Saving Home text carousel...";
+
+    await writeFile(
+      "content/home-text-carousel.json",
+      JSON.stringify(
+        data,
+        null,
+        2
+      ),
+      "Update Home text carousel"
+    );
+
+    textCarouselStatus.textContent =
+      "Home text carousel saved. The public website will load the new text automatically.";
+
+  }catch(error){
+
+    textCarouselStatus.innerHTML =
+      `<span class="error">${escapeHtml(error.message)}</span>`;
+
+  }
+}
+
+
+loadTextCarouselBtn.addEventListener(
+  "click",
+  loadHomeTextCarouselEditor
+);
+
+
+saveTextCarouselBtn.addEventListener(
+  "click",
+  saveHomeTextCarousel
+);
+
+
+/*
+  Give the editor useful default fields even before it
+  loads the file from GitHub.
+*/
+buildTextSlideFields([
+  {
+    title:"Small Projects, Big Possibilities",
+    text:"Build, explore and learn through hands-on activities."
+  },
+  {
+    title:"Learn by Doing",
+    text:"Watch the instructions, build the project and discover how it works."
+  },
+  {
+    title:"Create Your Way",
+    text:"Explore robotics, electronics and art at your own pace."
+  }
+]);
+
+
+
+
+/* ============================================================
+   PRODUCT CATEGORY MANAGER
+
+   Categories are stored as one category per line in:
+   content/product-categories.txt
+   ============================================================ */
+
+function normalizeCategories(values){
+
+  const result = [];
+  const seen = new Set();
+
+  for(const raw of values || []){
+
+    const value =
+      String(raw || "")
+        .trim();
+
+    if(!value){
+      continue;
+    }
+
+    const key =
+      value.toLocaleLowerCase();
+
+    if(seen.has(key)){
+      continue;
+    }
+
+    seen.add(key);
+    result.push(value);
+
+  }
+
+  return result;
+}
+
+
+function renderCategorySelect(selectedValue=""){
+
+  const requested =
+    String(
+      selectedValue ||
+      categorySelect.value ||
+      categories[0] ||
+      ""
+    ).trim();
+
+  categorySelect.innerHTML = "";
+
+  const options =
+    [...categories];
+
+  /*
+    If an older product uses a category that has since been
+    removed from the manager, keep it selectable while editing
+    that product so its existing value is not lost.
+  */
+  if(
+    requested &&
+    !options.some(
+      item =>
+        item.toLocaleLowerCase() ===
+        requested.toLocaleLowerCase()
+    )
+  ){
+    options.push(requested);
+  }
+
+  for(const category of options){
+
+    const option =
+      document.createElement("option");
+
+    option.value =
+      category;
+
+    option.textContent =
+      category;
+
+    categorySelect.appendChild(
+      option
+    );
+
+  }
+
+  if(requested){
+    categorySelect.value =
+      requested;
+  }
+}
+
+
+function renderCategoryManager(){
+
+  categoryManager.innerHTML = "";
+
+  if(!categories.length){
+
+    categoryManager.innerHTML =
+      '<div class="empty">No categories are available.</div>';
+
+    return;
+  }
+
+  categories.forEach(
+    category=>{
+
+      const row =
+        document.createElement("div");
+
+      row.className =
+        "page-row";
+
+      const left =
+        document.createElement("div");
+
+      left.innerHTML =
+        `<strong>${escapeHtml(category)}</strong>`;
+
+      const actions =
+        document.createElement("div");
+
+      const removeBtn =
+        document.createElement("button");
+
+      removeBtn.className =
+        "danger";
+
+      removeBtn.textContent =
+        "Remove";
+
+      removeBtn.onclick =
+        ()=>removeCategory(category);
+
+      actions.appendChild(
+        removeBtn
+      );
+
+      row.appendChild(left);
+      row.appendChild(actions);
+
+      categoryManager.appendChild(
+        row
+      );
+
+    }
+  );
+}
+
+
+async function loadCategories(){
+
+  categoryStatus.textContent =
+    "Loading categories...";
+
+  try{
+
+    const file =
+      await getFile(
+        "content/product-categories.txt"
+      );
+
+    if(file){
+
+      const raw =
+        base64DecodeUtf8(
+          file.content
+        );
+
+      const loaded =
+        normalizeCategories(
+          raw.split(/\r?\n/)
+        );
+
+      categories =
+        loaded.length
+          ? loaded
+          : [...DEFAULT_CATEGORIES];
+
+      categoryStatus.textContent =
+        "Categories loaded.";
+
+    }else{
+
+      categories =
+        [...DEFAULT_CATEGORIES];
+
+      categoryStatus.textContent =
+        "Using the default categories. Add a category to create content/product-categories.txt.";
+
+    }
+
+    renderCategorySelect();
+    renderCategoryManager();
+
+    renderSubcategoryParentSelect();
+    renderSubcategorySelect("");
+    renderSubcategoryManager();
+
+  }catch(error){
+
+    categories =
+      [...DEFAULT_CATEGORIES];
+
+    renderCategorySelect();
+    renderCategoryManager();
+
+    renderSubcategoryParentSelect();
+    renderSubcategorySelect("");
+    renderSubcategoryManager();
+
+    categoryStatus.innerHTML =
+      `<span class="error">${escapeHtml(error.message)}</span>`;
+
+  }
+}
+
+
+async function saveCategories(message="Update product categories"){
+
+  categories =
+    normalizeCategories(
+      categories
+    );
+
+  if(!categories.length){
+
+    throw new Error(
+      "At least one category is required."
+    );
+
+  }
+
+  const fileText =
+    categories.join("\n") + "\n";
+
+  await writeFile(
+    "content/product-categories.txt",
+    fileText,
+    message
+  );
+
+  renderCategorySelect(
+    categorySelect.value
+  );
+
+  renderCategoryManager();
+
+  renderSubcategoryParentSelect(
+    subcategoryParentCategory.value
+  );
+  renderSubcategorySelect("");
+  renderSubcategoryManager();
+}
+
+
+async function addCategory(){
+
+  categoryStatus.textContent =
+    "";
+
+  try{
+
+    validateConfig();
+
+    const newCategory =
+      newCategoryInput.value.trim();
+
+    if(!newCategory){
+
+      throw new Error(
+        "Enter a category name."
+      );
+
+    }
+
+    const alreadyExists =
+      categories.some(
+        item =>
+          item.toLocaleLowerCase() ===
+          newCategory.toLocaleLowerCase()
+      );
+
+    if(alreadyExists){
+
+      renderCategorySelect(
+        categories.find(
+          item =>
+            item.toLocaleLowerCase() ===
+            newCategory.toLocaleLowerCase()
+        )
+      );
+
+      throw new Error(
+        `"${newCategory}" is already in the category list.`
+      );
+
+    }
+
+    categories.push(
+      newCategory
+    );
+
+    categories =
+      normalizeCategories(
+        categories
+      );
+
+    categoryStatus.textContent =
+      `Saving "${newCategory}"...`;
+
+    await saveCategories(
+      `Add product category: ${newCategory}`
+    );
+
+    renderCategorySelect(
+      newCategory
+    );
+
+    newCategoryInput.value =
+      "";
+
+    categoryStatus.textContent =
+      `"${newCategory}" added to the Category drop-down.`;
+
+  }catch(error){
+
+    categoryStatus.innerHTML =
+      `<span class="error">${escapeHtml(error.message)}</span>`;
+
+  }
+}
+
+
+async function removeCategory(category){
+
+  categoryStatus.textContent =
+    "";
+
+  try{
+
+    validateConfig();
+
+    const categorySubcategories =
+      getSubcategoriesForCategory(
+        category
+      );
+
+    if(categorySubcategories.length){
+
+      throw new Error(
+        `"${category}" still has ${categorySubcategories.length} subcategory/subcategories. Remove them first.`
+      );
+
+    }
+
+    if(categories.length <= 1){
+
+      throw new Error(
+        "At least one category must remain."
+      );
+
+    }
+
+    const usedBy =
+      products.filter(
+        product =>
+          String(product.category || "")
+            .toLocaleLowerCase() ===
+          category.toLocaleLowerCase()
+      );
+
+    if(usedBy.length){
+
+      const names =
+        usedBy
+          .slice(0,3)
+          .map(product=>product.name)
+          .join(", ");
+
+      throw new Error(
+        `"${category}" is currently used by ${names}. Change those products to another category before removing it.`
+      );
+
+    }
+
+    if(
+      !confirm(
+        `Remove "${category}" from the Category drop-down?`
+      )
+    ){
+      return;
+    }
+
+    categories =
+      categories.filter(
+        item =>
+          item.toLocaleLowerCase() !==
+          category.toLocaleLowerCase()
+      );
+
+    categoryStatus.textContent =
+      `Removing "${category}"...`;
+
+    await saveCategories(
+      `Remove product category: ${category}`
+    );
+
+    categoryStatus.textContent =
+      `"${category}" removed.`;
+
+  }catch(error){
+
+    categoryStatus.innerHTML =
+      `<span class="error">${escapeHtml(error.message)}</span>`;
+
+  }
+}
+
+
+addCategoryBtn.addEventListener(
+  "click",
+  addCategory
+);
+
+
+newCategoryInput.addEventListener(
+  "keydown",
+  event=>{
+
+    if(event.key === "Enter"){
+
+      event.preventDefault();
+
+      addCategory();
+
+    }
+
+  }
+);
+
+
+reloadCategoriesBtn.addEventListener(
+  "click",
+  loadCategories
+);
+
+
+/*
+  Show defaults immediately, even before a GitHub connection
+  is available.
+*/
+renderCategorySelect(
+  DEFAULT_CATEGORIES[0]
+);
+
+renderCategoryManager();
+
+
+
+
+/* ============================================================
+   PRODUCT SUBCATEGORY MANAGER
+
+   Saved in the public repository as:
+   content/product-subcategories.json
+   ============================================================ */
+
+function normalizeSubcategoryMap(map){
+
+  const result = {};
+
+  for(const [category,values] of Object.entries(map || {})){
+
+    const cleanCategory =
+      String(category || "").trim();
+
+    if(!cleanCategory){
+      continue;
+    }
+
+    const seen = new Set();
+    const cleanValues = [];
+
+    for(const raw of Array.isArray(values) ? values : []){
+
+      const value =
+        String(raw || "").trim();
+
+      if(!value){
+        continue;
+      }
+
+      const key =
+        value.toLocaleLowerCase();
+
+      if(seen.has(key)){
+        continue;
+      }
+
+      seen.add(key);
+      cleanValues.push(value);
+
+    }
+
+    if(cleanValues.length){
+      result[cleanCategory] = cleanValues;
+    }
+
+  }
+
+  return result;
+}
+
+
+function getSubcategoriesForCategory(category){
+
+  const requested =
+    String(category || "").trim();
+
+  const key =
+    Object.keys(subcategories).find(
+      item =>
+        item.toLocaleLowerCase() ===
+        requested.toLocaleLowerCase()
+    );
+
+  return key
+    ? [...subcategories[key]]
+    : [];
+}
+
+
+function renderSubcategoryParentSelect(selectedValue=""){
+
+  const requested =
+    String(
+      selectedValue ||
+      subcategoryParentCategory.value ||
+      categories[0] ||
+      ""
+    ).trim();
+
+  subcategoryParentCategory.innerHTML =
+    "";
+
+  for(const category of categories){
+
+    const option =
+      document.createElement("option");
+
+    option.value =
+      category;
+
+    option.textContent =
+      category;
+
+    subcategoryParentCategory.appendChild(
+      option
+    );
+
+  }
+
+  if(requested){
+    subcategoryParentCategory.value =
+      requested;
+  }
+}
+
+
+function renderSubcategorySelect(selectedValue=""){
+
+  const category =
+    categorySelect.value ||
+    categories[0] ||
+    "";
+
+  const list =
+    getSubcategoriesForCategory(
+      category
+    );
+
+  const requested =
+    String(selectedValue || "").trim();
+
+  subcategorySelect.innerHTML =
+    "";
+
+  const blank =
+    document.createElement("option");
+
+  blank.value =
+    "";
+
+  blank.textContent =
+    "No subcategory";
+
+  subcategorySelect.appendChild(
+    blank
+  );
+
+  for(const subcategory of list){
+
+    const option =
+      document.createElement("option");
+
+    option.value =
+      subcategory;
+
+    option.textContent =
+      subcategory;
+
+    subcategorySelect.appendChild(
+      option
+    );
+
+  }
+
+  /*
+    Preserve an old product value while editing, even if that
+    subcategory was later removed from the manager.
+  */
+  if(
+    requested &&
+    !list.some(
+      item =>
+        item.toLocaleLowerCase() ===
+        requested.toLocaleLowerCase()
+    )
+  ){
+
+    const existing =
+      document.createElement("option");
+
+    existing.value =
+      requested;
+
+    existing.textContent =
+      `${requested} (existing)`;
+
+    subcategorySelect.appendChild(
+      existing
+    );
+
+  }
+
+  subcategorySelect.value =
+    requested;
+}
+
+
+function renderSubcategoryManager(){
+
+  subcategoryManager.innerHTML =
+    "";
+
+  const category =
+    subcategoryParentCategory.value ||
+    categories[0] ||
+    "";
+
+  if(!category){
+
+    subcategoryManager.innerHTML =
+      '<div class="empty">Add a category first.</div>';
+
+    return;
+  }
+
+  const list =
+    getSubcategoriesForCategory(
+      category
+    );
+
+  if(!list.length){
+
+    subcategoryManager.innerHTML =
+      `<div class="empty">No subcategories under "${escapeHtml(category)}".</div>`;
+
+    return;
+  }
+
+  for(const subcategory of list){
+
+    const row =
+      document.createElement("div");
+
+    row.className =
+      "page-row";
+
+    const left =
+      document.createElement("div");
+
+    left.innerHTML =
+      `<strong>${escapeHtml(subcategory)}</strong>
+       <small>${escapeHtml(category)}</small>`;
+
+    const actions =
+      document.createElement("div");
+
+    const removeBtn =
+      document.createElement("button");
+
+    removeBtn.className =
+      "danger";
+
+    removeBtn.textContent =
+      "Remove";
+
+    removeBtn.onclick =
+      ()=>removeSubcategory(
+        category,
+        subcategory
+      );
+
+    actions.appendChild(
+      removeBtn
+    );
+
+    row.appendChild(left);
+    row.appendChild(actions);
+
+    subcategoryManager.appendChild(
+      row
+    );
+
+  }
+}
+
+
+async function loadSubcategories(){
+
+  subcategoryStatus.textContent =
+    "Loading subcategories...";
+
+  try{
+
+    const file =
+      await getFile(
+        "content/product-subcategories.json"
+      );
+
+    if(file){
+
+      const parsed =
+        JSON.parse(
+          base64DecodeUtf8(
+            file.content
+          )
+        );
+
+      subcategories =
+        normalizeSubcategoryMap(
+          parsed
+        );
+
+      subcategoryStatus.textContent =
+        "Subcategories loaded.";
+
+    }else{
+
+      subcategories =
+        {};
+
+      subcategoryStatus.textContent =
+        "No subcategories have been saved yet.";
+
+    }
+
+  }catch(error){
+
+    subcategories =
+      {};
+
+    subcategoryStatus.innerHTML =
+      `<span class="error">${escapeHtml(error.message)}</span>`;
+
+  }
+
+  renderSubcategoryParentSelect();
+  renderSubcategorySelect("");
+  renderSubcategoryManager();
+}
+
+
+async function saveSubcategories(message="Update product subcategories"){
+
+  subcategories =
+    normalizeSubcategoryMap(
+      subcategories
+    );
+
+  await writeFile(
+    "content/product-subcategories.json",
+    JSON.stringify(
+      subcategories,
+      null,
+      2
+    ),
+    message
+  );
+
+  renderSubcategoryParentSelect(
+    subcategoryParentCategory.value
+  );
+
+  renderSubcategorySelect(
+    subcategorySelect.value
+  );
+
+  renderSubcategoryManager();
+}
+
+
+async function addSubcategory(){
+
+  subcategoryStatus.textContent =
+    "";
+
+  try{
+
+    validateConfig();
+
+    const category =
+      subcategoryParentCategory.value.trim();
+
+    const newSubcategory =
+      newSubcategoryInput.value.trim();
+
+    if(!category){
+
+      throw new Error(
+        "Select a parent category."
+      );
+
+    }
+
+    if(!newSubcategory){
+
+      throw new Error(
+        "Enter a subcategory name."
+      );
+
+    }
+
+    const current =
+      getSubcategoriesForCategory(
+        category
+      );
+
+    if(
+      current.some(
+        item =>
+          item.toLocaleLowerCase() ===
+          newSubcategory.toLocaleLowerCase()
+      )
+    ){
+
+      throw new Error(
+        `"${newSubcategory}" already exists under "${category}".`
+      );
+
+    }
+
+    const canonicalCategory =
+      categories.find(
+        item =>
+          item.toLocaleLowerCase() ===
+          category.toLocaleLowerCase()
+      ) || category;
+
+    subcategories[canonicalCategory] =
+      [
+        ...current,
+        newSubcategory
+      ];
+
+    await saveSubcategories(
+      `Add product subcategory: ${newSubcategory}`
+    );
+
+    newSubcategoryInput.value =
+      "";
+
+    if(
+      categorySelect.value.toLocaleLowerCase() ===
+      canonicalCategory.toLocaleLowerCase()
+    ){
+
+      renderSubcategorySelect(
+        newSubcategory
+      );
+
+    }
+
+    subcategoryStatus.textContent =
+      `"${newSubcategory}" added under "${canonicalCategory}".`;
+
+  }catch(error){
+
+    subcategoryStatus.innerHTML =
+      `<span class="error">${escapeHtml(error.message)}</span>`;
+
+  }
+}
+
+
+async function removeSubcategory(category,subcategory){
+
+  subcategoryStatus.textContent =
+    "";
+
+  try{
+
+    validateConfig();
+
+    const usedBy =
+      products.filter(
+        product =>
+          String(product.category || "")
+            .toLocaleLowerCase() ===
+            category.toLocaleLowerCase() &&
+          String(product.subcategory || "")
+            .toLocaleLowerCase() ===
+            subcategory.toLocaleLowerCase()
+      );
+
+    if(usedBy.length){
+
+      const names =
+        usedBy
+          .slice(0,3)
+          .map(product=>product.name)
+          .join(", ");
+
+      throw new Error(
+        `"${subcategory}" is currently used by ${names}. Change those products first.`
+      );
+
+    }
+
+    if(
+      !confirm(
+        `Remove "${subcategory}" from "${category}"?`
+      )
+    ){
+      return;
+    }
+
+    const key =
+      Object.keys(subcategories).find(
+        item =>
+          item.toLocaleLowerCase() ===
+          category.toLocaleLowerCase()
+      );
+
+    if(key){
+
+      subcategories[key] =
+        subcategories[key].filter(
+          item =>
+            item.toLocaleLowerCase() !==
+            subcategory.toLocaleLowerCase()
+        );
+
+      if(!subcategories[key].length){
+        delete subcategories[key];
+      }
+
+    }
+
+    await saveSubcategories(
+      `Remove product subcategory: ${subcategory}`
+    );
+
+    subcategoryStatus.textContent =
+      `"${subcategory}" removed.`;
+
+  }catch(error){
+
+    subcategoryStatus.innerHTML =
+      `<span class="error">${escapeHtml(error.message)}</span>`;
+
+  }
+}
+
+
+subcategoryParentCategory.addEventListener(
+  "change",
+  renderSubcategoryManager
+);
+
+
+categorySelect.addEventListener(
+  "change",
+  ()=>renderSubcategorySelect("")
+);
+
+
+addSubcategoryBtn.addEventListener(
+  "click",
+  addSubcategory
+);
+
+
+newSubcategoryInput.addEventListener(
+  "keydown",
+  event=>{
+
+    if(event.key === "Enter"){
+
+      event.preventDefault();
+
+      addSubcategory();
+
+    }
+
+  }
+);
+
+
+reloadSubcategoriesBtn.addEventListener(
+  "click",
+  loadSubcategories
+);
+
+
+/*
+  Defaults before GitHub connection.
+*/
+renderSubcategoryParentSelect();
+renderSubcategorySelect("");
+renderSubcategoryManager();
+
+
+
+function getConfig(){
+  return {
+    owner: document.getElementById("ghOwner").value.trim(),
+    repo: document.getElementById("ghRepo").value.trim(),
+    branch: document.getElementById("ghBranch").value.trim() || "main",
+    token: document.getElementById("ghToken").value.trim()
+  };
+}
+
+function validateConfig(){
+  const c = getConfig();
+  if(!c.owner || !c.repo || !c.branch) throw new Error("Enter repository owner, repository name and branch.");
+  if(!c.token) throw new Error("Enter your GitHub token.");
+  return c;
+}
+
+function saveSettings(){
+  const c = getConfig();
+  localStorage.setItem("nilda_target_owner", c.owner);
+  localStorage.setItem("nilda_target_repo", c.repo);
+  localStorage.setItem("nilda_target_branch", c.branch);
+  sessionStorage.setItem("nilda_target_token", c.token);
+  connectionStatus.textContent = "Repository settings stored for this browser session.";
+}
+
+function restoreSettings(){
+  document.getElementById("ghOwner").value = localStorage.getItem("nilda_target_owner") || "";
+  document.getElementById("ghRepo").value = localStorage.getItem("nilda_target_repo") || "";
+  document.getElementById("ghBranch").value = localStorage.getItem("nilda_target_branch") || "main";
+  document.getElementById("ghToken").value = sessionStorage.getItem("nilda_target_token") || "";
+}
+
+document.getElementById("rememberBtn").addEventListener("click", saveSettings);
+
+function encodedPath(path){ return path.split("/").map(encodeURIComponent).join("/"); }
+
+function base64EncodeUtf8(text){
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
+}
+
+function base64DecodeUtf8(base64){
+  const binary = atob(String(base64).replace(/\n/g,""));
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+async function githubRequest(url, options={}){
+  const c = validateConfig();
+  const response = await fetch(url,{
+    ...options,
+    headers:{
+      "Accept":"application/vnd.github+json",
+      "Authorization":`Bearer ${c.token}`,
+      "X-GitHub-Api-Version":"2022-11-28",
+      ...(options.headers || {})
+    }
+  });
+
+  if(response.status === 204) return null;
+  const body = await response.json().catch(() => null);
+
+  if(!response.ok){
+    const err = new Error(body?.message || `GitHub request failed (${response.status})`);
+    err.status = response.status;
+    throw err;
+  }
+  return body;
+}
+
+function contentsUrl(path){
+  const c = validateConfig();
+  return `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/contents/${encodedPath(path)}`;
+}
+
+async function getFile(path){
+  const c = validateConfig();
+  try{
+    return await githubRequest(`${contentsUrl(path)}?ref=${encodeURIComponent(c.branch)}`,{method:"GET"});
+  }catch(err){
+    if(err.status === 404) return null;
+    throw err;
+  }
+}
+
+async function writeFile(path, text, message){
+  const c = validateConfig();
+  const existing = await getFile(path);
+  const body = {message,content:base64EncodeUtf8(text),branch:c.branch};
+  if(existing?.sha) body.sha = existing.sha;
+  return githubRequest(contentsUrl(path),{
+    method:"PUT",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)
+  });
+}
+
+async function deleteFile(path, message){
+  const c = validateConfig();
+  const existing = await getFile(path);
+  if(!existing) return;
+  return githubRequest(contentsUrl(path),{
+    method:"DELETE",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({message,sha:existing.sha,branch:c.branch})
+  });
+}
+
+async function getManifest(){
+  const file = await getFile("products/index.json");
+  if(!file) return {products:[]};
+  try{
+    const data = JSON.parse(base64DecodeUtf8(file.content));
+    if(!Array.isArray(data.products)) data.products = [];
+    return data;
+  }catch{
+    return {products:[]};
+  }
+}
+
+async function loadProducts(){
+  productManager.innerHTML = '<div class="empty">Loading projects...</div>';
+
+  try{
+    manifest = await getManifest();
+    const loaded = [];
+
+    for(const item of manifest.products){
+      const file = await getFile(item.file);
+      if(!file) continue;
+
+      try{
+        const project = JSON.parse(base64DecodeUtf8(file.content));
+        loaded.push({
+          ...project,
+          _file:item.file,
+          _slug:item.slug,
+          _fixedPage:item.fixedPage || project.fixedPage || ""
+        });
+      }catch{}
+    }
+
+    products = loaded;
+    renderManager();
+  }catch(err){
+    productManager.innerHTML = `<div class="error">${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderManager(){
+  productManager.innerHTML = "";
+
+  if(!products.length){
+    productManager.innerHTML = '<div class="empty">No projects were found in products/index.json.</div>';
+    return;
+  }
+
+  products.forEach(product => {
+    const row = document.createElement("div");
+    row.className = "page-row";
+
+    const isCore = product._fixedPage === "robotics" || product._fixedPage === "mandala";
+
+    const left = document.createElement("div");
+    left.innerHTML = `
+      <strong>${escapeHtml(product.name)}</strong>
+      <small>${escapeHtml(product.pageTitle || product.name)}${isCore ? " • Main Home project" : ""}</small>`;
+
+    const actions = document.createElement("div");
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "secondary";
+    editBtn.textContent = "Load for Editing";
+    editBtn.onclick = () => loadForEditing(product);
+    actions.appendChild(editBtn);
+
+    if(!isCore){
+      const delBtn = document.createElement("button");
+      delBtn.className = "danger";
+      delBtn.style.marginLeft = "8px";
+      delBtn.textContent = "Delete";
+      delBtn.onclick = () => removeProduct(product);
+      actions.appendChild(delBtn);
+    }
+
+    row.appendChild(left);
+    row.appendChild(actions);
+    productManager.appendChild(row);
+  });
+}
+
+function loadForEditing(product){
+  editingProject = {
+    slug:product._slug || product.slug || slugify(product.name),
+    file:product._file || `products/${product.slug || slugify(product.name)}.json`,
+    fixedPage:product._fixedPage || product.fixedPage || ""
+  };
+
+  document.getElementById("projectName").value = product.name || "";
+  document.getElementById("pageTitle").value = product.pageTitle || "";
+  renderCategorySelect(
+    product.category ||
+    categories[0] ||
+    "Other"
+  );
+
+  renderSubcategorySelect(
+    product.subcategory ||
+    ""
+  );
+
+  document.getElementById("targetAge").value = product.targetAge || "";
+  document.getElementById("description").value = product.description || "";
+  document.getElementById("extraNotes").value = product.extraNotes || "";
+  document.getElementById("layoutStyle").value = product.layout || "grid";
+
+  const vids = Array.isArray(product.videos) ? product.videos : [];
+  videoCount.value = Math.max(1,vids.length || 1);
+  buildVideoFields();
+
+  [...document.querySelectorAll(".video-title")].forEach((el,i) => el.value = vids[i]?.title || "");
+  [...document.querySelectorAll(".video-src")].forEach((el,i) => el.value = vids[i]?.src || "");
+
+  window.scrollTo({
+    top:document.getElementById("projectName").getBoundingClientRect().top + window.scrollY - 110,
+    behavior:"smooth"
+  });
+
+  saveStatus.textContent = `Loaded "${product.name}" for editing.`;
+}
+
+function collectProduct(){
+  const titles = [...document.querySelectorAll(".video-title")];
+  const sources = [...document.querySelectorAll(".video-src")];
+
+  return {
+    name:document.getElementById("projectName").value.trim(),
+    pageTitle:document.getElementById("pageTitle").value.trim(),
+    category:categorySelect.value,
+    subcategory:subcategorySelect.value,
+    targetAge:document.getElementById("targetAge").value.trim(),
+    description:document.getElementById("description").value.trim(),
+    extraNotes:document.getElementById("extraNotes").value.trim(),
+    layout:document.getElementById("layoutStyle").value,
+    videos:titles.map((t,i) => ({
+      title:t.value.trim() || `Instruction Video ${i+1}`,
+      src:sources[i].value.trim()
+    }))
+  };
+}
+
+function clearForm(){
+  editingProject = null;
+  document.getElementById("projectName").value = "";
+  document.getElementById("pageTitle").value = "";
+  document.getElementById("targetAge").value = "";
+  document.getElementById("description").value = "";
+  document.getElementById("extraNotes").value = "";
+  renderCategorySelect(
+    categories[0] ||
+    "Other"
+  );
+
+  renderSubcategorySelect(
+    ""
+  );
+
+  document.getElementById("layoutStyle").value = "grid";
+  videoCount.value = 3;
+  buildVideoFields();
+}
+
+document.getElementById("clearBtn").addEventListener("click", clearForm);
+
+document.getElementById("testBtn").addEventListener("click", async () => {
+  connectionStatus.textContent = "Testing connection...";
+  try{
+    const c = validateConfig();
+    const repo = await githubRequest(`https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}`,{method:"GET"});
+    connectionStatus.textContent = `Connected to ${repo.full_name}.`;
+    saveSettings();
+    await loadCategories();
+    await loadSubcategories();
+    await loadProducts();
+    await loadHomeTextCarouselEditor();
+  }catch(err){
+    connectionStatus.innerHTML = `<span class="error">${escapeHtml(err.message)}</span>`;
+  }
+});
+
+document.getElementById("refreshBtn").addEventListener("click", async () => {
+  await loadCategories();
+  await loadSubcategories();
+  await loadProducts();
+  await loadHomeTextCarouselEditor();
+});
+
+document.getElementById("saveProductBtn").addEventListener("click", async () => {
+  saveStatus.textContent = "";
+
+  try{
+    validateConfig();
+    const product = collectProduct();
+    if(!product.name) throw new Error("Enter a product/project name.");
+
+    const slug = editingProject?.slug || slugify(product.name);
+    const file = editingProject?.file || `products/${slug}.json`;
+    const fixedPage = editingProject?.fixedPage || "";
+
+    product.slug = slug;
+    if(fixedPage) product.fixedPage = fixedPage;
+    product.updatedAt = new Date().toISOString();
+
+    saveStatus.textContent = `Saving "${product.name}"...`;
+
+    await writeFile(file,JSON.stringify(product,null,2),`Add or update project: ${product.name}`);
+
+    manifest = await getManifest();
+    manifest.products = manifest.products.filter(item => item.slug !== slug);
+
+    const entry = {slug,name:product.name,file};
+    if(fixedPage) entry.fixedPage = fixedPage;
+    manifest.products.push(entry);
+
+    const order = {"diy-robotics":0,"mandala-coaster-art":1};
+    manifest.products.sort((a,b) => {
+      const ao = order[a.slug] ?? 100;
+      const bo = order[b.slug] ?? 100;
+      if(ao !== bo) return ao - bo;
+      return a.name.localeCompare(b.name);
+    });
+
+    await writeFile("products/index.json",JSON.stringify(manifest,null,2),`Update project index: ${product.name}`);
+
+    saveStatus.textContent = fixedPage
+      ? `"${product.name}" saved to the public website repository.`
+      : `"${product.name}" saved. Its Home-page button will appear automatically in the product grid to the right of the carousel.`;
+    clearForm();
+    await loadProducts();
+  }catch(err){
+    saveStatus.innerHTML = `<span class="error">${escapeHtml(err.message)}</span>`;
+  }
+});
+
+async function removeProduct(product){
+  const fixedPage = product._fixedPage || product.fixedPage || "";
+
+  if(fixedPage === "robotics" || fixedPage === "mandala"){
+    saveStatus.innerHTML = '<span class="error">The two main Home projects can be edited but are protected from deletion.</span>';
+    return;
+  }
+
+  const slug = product._slug || product.slug || slugify(product.name);
+  const file = product._file || `products/${slug}.json`;
+
+  if(!confirm(`Delete "${product.name}" from the public website repository?`)) return;
+
+  try{
+    saveStatus.textContent = `Deleting "${product.name}"...`;
+    await deleteFile(file,`Delete project: ${product.name}`);
+
+    manifest = await getManifest();
+    manifest.products = manifest.products.filter(item => item.slug !== slug);
+
+    await writeFile("products/index.json",JSON.stringify(manifest,null,2),`Remove project from index: ${product.name}`);
+    saveStatus.textContent = `"${product.name}" deleted.`;
+    await loadProducts();
+  }catch(err){
+    saveStatus.innerHTML = `<span class="error">${escapeHtml(err.message)}</span>`;
+  }
+}
+
+
+
+/* ============================================================
+   ORGANIZED DEVELOPER CONSOLE UI
+
+   The original controls and IDs remain unchanged. This function
+   only reorganizes the existing DOM into a sidebar workspace.
+   ============================================================ */
+
+function organizeDeveloperConsole(){
+
+  const developerApp =
+    document.getElementById("developerApp");
+
+  const layout =
+    developerApp?.querySelector(".layout");
+
+  const primaryPanel =
+    layout?.querySelector(":scope > section.panel");
+
+  const helpPanel =
+    layout?.querySelector(":scope > aside.panel");
+
+  if(
+    !developerApp ||
+    !layout ||
+    !primaryPanel
+  ){
+    return;
+  }
+
+
+  /*
+    Create the new shell.
+  */
+  const shell =
+    document.createElement("div");
+
+  shell.className =
+    "console-shell";
+
+
+  const nav =
+    document.createElement("nav");
+
+  nav.className =
+    "console-nav";
+
+  nav.setAttribute(
+    "aria-label",
+    "Developer Console sections"
+  );
+
+
+  const navTitle =
+    document.createElement("div");
+
+  navTitle.className =
+    "console-nav-title";
+
+  navTitle.textContent =
+    "Console Menu";
+
+  nav.appendChild(
+    navTitle
+  );
+
+
+  const workspace =
+    document.createElement("div");
+
+  workspace.className =
+    "console-workspace";
+
+
+  function createPanel(
+    id,
+    title,
+    description,
+    kicker="Workspace"
+  ){
+
+    const panel =
+      document.createElement("section");
+
+    panel.id =
+      `console-${id}`;
+
+    panel.className =
+      "tool-panel";
+
+    panel.dataset.consolePanel =
+      id;
+
+    const head =
+      document.createElement("div");
+
+    head.className =
+      "tool-heading";
+
+    head.innerHTML = `
+      <div>
+        <div class="tool-kicker">
+          ${escapeHtml(kicker)}
+        </div>
+
+        <h2>
+          ${escapeHtml(title)}
+        </h2>
+
+        <p>
+          ${escapeHtml(description)}
+        </p>
+      </div>
+    `;
+
+    panel.appendChild(
+      head
+    );
+
+    workspace.appendChild(
+      panel
+    );
+
+    return panel;
+  }
+
+
+  function addNav(
+    id,
+    label,
+    icon
+  ){
+
+    const button =
+      document.createElement("button");
+
+    button.type =
+      "button";
+
+    button.dataset.consoleTarget =
+      id;
+
+    button.innerHTML = `
+      <span class="nav-icon">
+        ${icon}
+      </span>
+
+      <span>
+        ${escapeHtml(label)}
+      </span>
+    `;
+
+    button.addEventListener(
+      "click",
+      ()=>activateConsolePanel(id)
+    );
+
+    nav.appendChild(
+      button
+    );
+
+    return button;
+  }
+
+
+  /*
+    Repository connection panel:
+    move all original nodes before the first .section.
+  */
+  const repoPanel =
+    createPanel(
+      "repository",
+      "Repository Connection",
+      "Connect this console to the public Amazon repository before editing website content.",
+      "Setup"
+    );
+
+  const firstSection =
+    primaryPanel.querySelector(
+      ":scope > .section"
+    );
+
+  const repoContent =
+    document.createElement("div");
+
+  repoContent.className =
+    "inner-card";
+
+  while(
+    primaryPanel.firstChild &&
+    primaryPanel.firstChild !== firstSection
+  ){
+    repoContent.appendChild(
+      primaryPanel.firstChild
+    );
+  }
+
+  repoPanel.appendChild(
+    repoContent
+  );
+
+
+  /*
+    Identify all original top-level sections by heading.
+  */
+  const sections =
+    Array.from(
+      primaryPanel.querySelectorAll(
+        ":scope > .section"
+      )
+    );
+
+
+  function sectionByTitle(title){
+
+    return sections.find(
+      section =>
+        section
+          .querySelector("h2")
+          ?.textContent
+          .trim() === title
+    );
+
+  }
+
+
+  const categorySection =
+    sectionByTitle(
+      "Manage Product Categories"
+    );
+
+  const subcategorySection =
+    sectionByTitle(
+      "Manage Product Subcategories"
+    );
+
+  const productSection =
+    sectionByTitle(
+      "Create or Update a Product Page"
+    );
+
+  const carouselSection =
+    sectionByTitle(
+      "Home Text Carousel"
+    );
+
+  const managerSection =
+    sectionByTitle(
+      "Manage Product Pages"
+    );
+
+
+  /*
+    Categories & subcategories share one organized workspace.
+  */
+  const taxonomyPanel =
+    createPanel(
+      "taxonomy",
+      "Categories & Subcategories",
+      "Maintain the drop-down choices used while creating or editing products.",
+      "Catalog Setup"
+    );
+
+  const taxonomyGrid =
+    document.createElement("div");
+
+  taxonomyGrid.className =
+    "taxonomy-grid";
+
+  for(
+    const section of
+    [categorySection,subcategorySection]
+  ){
+
+    if(!section){
+      continue;
+    }
+
+    section.classList.add(
+      "inner-card",
+      "section-jump"
+    );
+
+    taxonomyGrid.appendChild(
+      section
+    );
+
+  }
+
+  taxonomyPanel.appendChild(
+    taxonomyGrid
+  );
+
+
+  /*
+    Product editor.
+  */
+  const productsPanel =
+    createPanel(
+      "products",
+      "Product Editor",
+      "Create a new public product page or load an existing product and update its details and videos.",
+      "Content"
+    );
+
+  if(productSection){
+
+    const note =
+      document.createElement("div");
+
+    note.className =
+      "workspace-note";
+
+    note.textContent =
+      "Tip: use Product Library to load an existing project for editing. New products are automatically added to the public Home page.";
+
+    productsPanel.appendChild(
+      note
+    );
+
+    productSection.classList.add(
+      "section-jump"
+    );
+
+    productsPanel.appendChild(
+      productSection
+    );
+
+  }
+
+
+  /*
+    Home text carousel editor.
+  */
+  const carouselPanel =
+    createPanel(
+      "carousel",
+      "Home Text Carousel",
+      "Edit the messages that appear in the small text carousel on the public Home page.",
+      "Home Page"
+    );
+
+  if(carouselSection){
+
+    carouselSection.classList.add(
+      "section-jump"
+    );
+
+    carouselPanel.appendChild(
+      carouselSection
+    );
+
+  }
+
+
+  /*
+    Product library.
+  */
+  const libraryPanel =
+    createPanel(
+      "library",
+      "Product Library",
+      "Browse existing product pages, load one for editing, or delete non-core projects.",
+      "Manage"
+    );
+
+  if(managerSection){
+
+    managerSection.classList.add(
+      "section-jump"
+    );
+
+    libraryPanel.appendChild(
+      managerSection
+    );
+
+  }
+
+
+  /*
+    Help / repository reference material.
+  */
+  const helpWorkspace =
+    createPanel(
+      "help",
+      "Help & Repository Guide",
+      "Reference information for repository structure, video paths and GitHub token permissions.",
+      "Reference"
+    );
+
+  if(helpPanel){
+
+    helpPanel.classList.add(
+      "organized-source"
+    );
+
+    const supportGrid =
+      document.createElement("div");
+
+    supportGrid.className =
+      "support-grid";
+
+    /*
+      Move each original help block into the grid.
+    */
+    Array
+      .from(helpPanel.children)
+      .forEach(
+        child=>supportGrid.appendChild(child)
+      );
+
+    helpWorkspace.appendChild(
+      supportGrid
+    );
+
+  }
+
+
+  /*
+    Navigation.
+  */
+  addNav(
+    "repository",
+    "Repository",
+    "01"
+  );
+
+  addNav(
+    "taxonomy",
+    "Categories",
+    "02"
+  );
+
+  addNav(
+    "products",
+    "Product Editor",
+    "03"
+  );
+
+  addNav(
+    "carousel",
+    "Home Carousel",
+    "04"
+  );
+
+  addNav(
+    "library",
+    "Product Library",
+    "05"
+  );
+
+  addNav(
+    "help",
+    "Help",
+    "06"
+  );
+
+
+  shell.appendChild(
+    nav
+  );
+
+  shell.appendChild(
+    workspace
+  );
+
+
+  /*
+    Replace the original continuous layout with the organized shell.
+    The controls themselves are the same DOM nodes, so all existing
+    listeners and IDs continue to work.
+  */
+  layout.classList.add(
+    "organized-layout"
+  );
+
+  primaryPanel.classList.add(
+    "organized-source"
+  );
+
+  layout.replaceWith(
+    shell
+  );
+
+
+  activateConsolePanel(
+    "repository"
+  );
+}
+
+
+function activateConsolePanel(id){
+
+  document
+    .querySelectorAll(
+      "[data-console-panel]"
+    )
+    .forEach(
+      panel=>{
+
+        panel.classList.toggle(
+          "active",
+          panel.dataset.consolePanel === id
+        );
+
+      }
+    );
+
+
+  document
+    .querySelectorAll(
+      "[data-console-target]"
+    )
+    .forEach(
+      button=>{
+
+        const active =
+          button.dataset.consoleTarget === id;
+
+        button.classList.toggle(
+          "active",
+          active
+        );
+
+        button.setAttribute(
+          "aria-current",
+          active ? "page" : "false"
+        );
+
+      }
+    );
+
+
+  /*
+    On phones, keep the active tab visible in the horizontal menu.
+  */
+  const activeButton =
+    document.querySelector(
+      `[data-console-target="${id}"]`
+    );
+
+  activeButton?.scrollIntoView({
+    behavior:"smooth",
+    block:"nearest",
+    inline:"nearest"
+  });
+}
+
+
+/*
+  When an existing product is loaded from Product Library,
+  automatically switch to the Product Editor.
+*/
+const originalLoadForEditing =
+  loadForEditing;
+
+loadForEditing =
+  function(product){
+
+    activateConsolePanel(
+      "products"
+    );
+
+    originalLoadForEditing(
+      product
+    );
+
+  };
+
+
+organizeDeveloperConsole();
+
+
+
+/* ============================================================
+   OPEN DEVELOPER CONSOLE STARTUP
+   ============================================================ */
+
+restoreSettings();
+
+const openConfig = getConfig();
+
+if(
+  openConfig.owner &&
+  openConfig.repo &&
+  openConfig.token
+){
+  (async ()=>{
+    await loadCategories();
+    await loadSubcategories();
+    await loadProducts();
+    await loadHomeTextCarouselEditor();
+  })();
+}
+</script>
+</body>
+</html>
