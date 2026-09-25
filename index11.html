@@ -55,8 +55,8 @@
     .status{min-height:24px;margin-top:14px;color:var(--good);font-weight:800}
     .error{color:#ff879a}.warning{color:var(--warn)}
     .section{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
-    .video-input,.pdf-input{padding:14px;margin-top:10px;border:1px solid #282828;border-radius:14px;background:#0b0b0b}
-    .video-grid,.pdf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .video-input{padding:14px;margin-top:10px;border:1px solid #282828;border-radius:14px;background:#0b0b0b}
+    .video-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
     .page-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid #242424}
     .page-row small{display:block;color:#858585;margin-top:4px}
     .empty{color:#777}
@@ -363,7 +363,7 @@
 @media(max-width:820px){
       .site-logo{width:62px;height:62px}
       .brand{font-size:1rem;white-space:normal}
-      .layout,.form-grid,.video-grid,.pdf-grid{grid-template-columns:1fr}
+      .layout,.form-grid,.video-grid{grid-template-columns:1fr}
       .page-row{align-items:flex-start;flex-direction:column}
 
       .console-shell{
@@ -633,11 +633,6 @@
           </div>
 
           <div>
-            <label for="pdfCount">Number of instruction PDFs</label>
-            <input id="pdfCount" type="number" min="0" max="25" value="1">
-          </div>
-
-          <div>
             <label for="layoutStyle">Video layout</label>
             <select id="layoutStyle">
               <option value="grid">Video Grid</option>
@@ -653,12 +648,6 @@
           <div class="full">
             <label>Video details</label>
             <div id="videoFields"></div>
-          </div>
-
-          <div class="full">
-            <label>Instruction PDF details</label>
-            <p style="margin:5px 0 10px;font-size:.88rem">Add one or more instruction manuals. Upload the PDF files separately to your public repository, then enter their paths below.</p>
-            <div id="pdfFields"></div>
           </div>
 
           <div class="full">
@@ -762,15 +751,6 @@ products/
       </div>
 
       <div class="section">
-        <h2>Instruction PDF files</h2>
-        <p>
-          Upload instruction manuals separately into a <code>manuals/</code> folder of the
-          public website repository. Then enter paths such as
-          <code>manuals/diy-robotics-manual.pdf</code>. Multiple PDFs can be attached to each product.
-        </p>
-      </div>
-
-      <div class="section">
         <h2>GitHub Token Permission</h2>
         <p>
           Use a fine-grained token restricted to the public website repository with
@@ -786,8 +766,6 @@ products/
 <script>
 const videoFields = document.getElementById("videoFields");
 const videoCount = document.getElementById("videoCount");
-const pdfFields = document.getElementById("pdfFields");
-const pdfCount = document.getElementById("pdfCount");
 const connectionStatus = document.getElementById("connectionStatus");
 const saveStatus = document.getElementById("saveStatus");
 const productManager = document.getElementById("productManager");
@@ -874,46 +852,6 @@ function buildVideoFields(){
 
 videoCount.addEventListener("input", buildVideoFields);
 buildVideoFields();
-
-function buildPdfFields(existingPdfs=[]){
-  const count = Math.max(0, Math.min(25, Number(pdfCount.value) || 0));
-  pdfCount.value = count;
-  pdfFields.innerHTML = "";
-
-  for(let i=0;i<count;i++){
-    const pdf = existingPdfs[i] || {};
-    const div = document.createElement("div");
-    div.className = "pdf-input";
-    div.innerHTML = `
-      <strong>Instruction PDF ${i+1}</strong>
-      <div class="pdf-grid">
-        <div>
-          <label>PDF title</label>
-          <input class="pdf-title" placeholder="Example: Complete Instruction Manual" value="${escapeHtml(pdf.title || "")}">
-        </div>
-        <div>
-          <label>PDF file path or URL</label>
-          <input class="pdf-src" placeholder="manuals/example-manual.pdf" value="${escapeHtml(pdf.src || pdf.url || "")}">
-        </div>
-      </div>`;
-    pdfFields.appendChild(div);
-  }
-}
-
-function collectCurrentPdfFields(){
-  const titles = [...document.querySelectorAll(".pdf-title")];
-  const sources = [...document.querySelectorAll(".pdf-src")];
-  return titles.map((t,i)=>({
-    title:t.value.trim(),
-    src:sources[i]?.value.trim() || ""
-  }));
-}
-
-pdfCount.addEventListener("input", ()=>{
-  const existing = collectCurrentPdfFields();
-  buildPdfFields(existing);
-});
-buildPdfFields();
 
 
 /* ============================================================
@@ -2457,20 +2395,6 @@ function loadForEditing(product){
   [...document.querySelectorAll(".video-title")].forEach((el,i) => el.value = vids[i]?.title || "");
   [...document.querySelectorAll(".video-src")].forEach((el,i) => el.value = vids[i]?.src || "");
 
-  let pdfs = Array.isArray(product.pdfs) ? product.pdfs : [];
-  if(!pdfs.length){
-    const legacyPdf = product.pdf || product.manualPdf || product.instructionManual || product.pdfUrl || "";
-    if(legacyPdf){
-      pdfs = [{
-        title:"Instruction Manual",
-        src:legacyPdf
-      }];
-    }
-  }
-
-  pdfCount.value = pdfs.length;
-  buildPdfFields(pdfs);
-
   window.scrollTo({
     top:document.getElementById("projectName").getBoundingClientRect().top + window.scrollY - 110,
     behavior:"smooth"
@@ -2482,15 +2406,6 @@ function loadForEditing(product){
 function collectProduct(){
   const titles = [...document.querySelectorAll(".video-title")];
   const sources = [...document.querySelectorAll(".video-src")];
-  const pdfTitles = [...document.querySelectorAll(".pdf-title")];
-  const pdfSources = [...document.querySelectorAll(".pdf-src")];
-
-  const pdfs = pdfTitles
-    .map((t,i)=>({
-      title:t.value.trim() || `Instruction PDF ${i+1}`,
-      src:pdfSources[i]?.value.trim() || ""
-    }))
-    .filter(pdf=>pdf.src);
 
   return {
     name:document.getElementById("projectName").value.trim(),
@@ -2504,9 +2419,7 @@ function collectProduct(){
     videos:titles.map((t,i) => ({
       title:t.value.trim() || `Instruction Video ${i+1}`,
       src:sources[i].value.trim()
-    })),
-    pdfs,
-    pdf:pdfs[0]?.src || ""
+    }))
   };
 }
 
@@ -2529,8 +2442,6 @@ function clearForm(){
   document.getElementById("layoutStyle").value = "grid";
   videoCount.value = 3;
   buildVideoFields();
-  pdfCount.value = 1;
-  buildPdfFields();
 }
 
 document.getElementById("clearBtn").addEventListener("click", clearForm);
@@ -2935,7 +2846,7 @@ function organizeDeveloperConsole(){
     createPanel(
       "products",
       "Product Editor",
-      "Create a new public product page or load an existing product and update its details, videos and instruction PDFs.",
+      "Create a new public product page or load an existing product and update its details and videos.",
       "Content"
     );
 
@@ -3020,7 +2931,7 @@ function organizeDeveloperConsole(){
     createPanel(
       "help",
       "Help & Repository Guide",
-      "Reference information for repository structure, video paths, PDF paths and GitHub token permissions.",
+      "Reference information for repository structure, video paths and GitHub token permissions.",
       "Reference"
     );
 
