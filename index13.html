@@ -142,26 +142,6 @@
       line-height:1.4;
     }
 
-    .release-badge{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-
-      margin-top:8px;
-      padding:5px 8px;
-
-      border:1px solid #3c3b24;
-      border-radius:999px;
-
-      background:#151309;
-      color:#e7d486;
-
-      font-size:.7rem;
-      font-weight:900;
-      letter-spacing:.03em;
-    }
-
-
     .pdf-input{
       padding:14px;
       margin-top:10px;
@@ -790,7 +770,7 @@
           <div class="full">
             <div class="media-section-label">
               <label style="margin:0">Instruction PDFs</label>
-              <span class="media-section-note">PDFs uploaded here are stored as GitHub Release Assets</span>
+              <span class="media-section-note">PDFs uploaded here are saved in the public repository's pdfs/ folder</span>
             </div>
             <div id="pdfFields"></div>
           </div>
@@ -889,11 +869,11 @@ products/
       <div class="section">
         <h2>Video &amp; PDF files</h2>
         <p>
-          In the <strong>Product Editor</strong>, you can choose videos and PDFs directly
-          from your device. Videos continue to use the repository upload workflow.
-          Instruction PDFs are uploaded as <strong>GitHub Release Assets</strong>, which
-          is better suited to large downloadable manuals and keeps them out of Git history.
-          The PDF download URL is filled into the product automatically.
+          In the <strong>Product Editor</strong>, you can now choose a video or PDF
+          directly from your device and upload it to the public repository. Videos are
+          saved under <code>videos/</code> and PDFs under <code>pdfs/</code>; the saved
+          path is filled into the product automatically. You can still type an existing
+          repository path or external URL manually if needed.
         </p>
       </div>
 
@@ -1141,12 +1121,6 @@ function buildPdfFields(entries=currentPdfEntries()){
     div.innerHTML = `
       <strong>Instruction PDF ${i + 1}</strong>
 
-      ${
-        saved.storage === "release-asset"
-          ? '<div class="release-badge">Stored as GitHub Release Asset</div>'
-          : ""
-      }
-
       <div class="pdf-grid">
 
         <div>
@@ -1160,15 +1134,12 @@ function buildPdfFields(entries=currentPdfEntries()){
         </div>
 
         <div>
-          <label>PDF download URL</label>
+          <label>PDF file path or URL</label>
 
           <input
             class="pdf-src"
-            placeholder="GitHub Release Asset URL is filled automatically"
+            placeholder="pdfs/instruction-manual.pdf"
             value="${escapeHtml(saved.src || "")}"
-            data-storage="${escapeHtml(saved.storage || "")}"
-            data-asset-id="${escapeHtml(saved.assetId || "")}"
-            data-asset-name="${escapeHtml(saved.assetName || "")}"
           >
         </div>
 
@@ -1195,11 +1166,8 @@ function buildPdfFields(entries=currentPdfEntries()){
           <div class="upload-status"></div>
 
           <small class="file-size-note">
-            The PDF is uploaded as a GitHub Release Asset. Large manuals such as
-            79 MB or 91 MB can be stored this way without adding them to the
-            repository's Git history. The download URL above is filled automatically.
-            If GitHub temporarily blocks browser-based Release Asset uploads, retry the
-            upload or use the repository's Releases page as a fallback.
+            The PDF is uploaded directly to the public GitHub repository's
+            pdfs/ folder and the path above is filled automatically.
           </small>
         </div>
 
@@ -2550,346 +2518,6 @@ renderSubcategoryManager();
 
 
 /* ============================================================
-   GITHUB RELEASE ASSETS FOR LARGE INSTRUCTION PDFs
-   ============================================================ */
-
-const MANUAL_RELEASE_TAG =
-  "instruction-manuals";
-
-const MANUAL_RELEASE_NAME =
-  "NILDA Instruction Manuals";
-
-const MAX_RELEASE_ASSET_BYTES =
-  2 * 1024 * 1024 * 1024;
-
-
-async function githubJsonRequest(
-  url,
-  options={}
-){
-
-  const c =
-    validateConfig();
-
-  const response =
-    await fetch(
-      url,
-      {
-        ...options,
-        headers:{
-          "Accept":"application/vnd.github+json",
-          "Authorization":`Bearer ${c.token}`,
-          "X-GitHub-Api-Version":"2022-11-28",
-          ...(options.headers || {})
-        }
-      }
-    );
-
-  if(response.status === 204){
-    return null;
-  }
-
-  const body =
-    await response
-      .json()
-      .catch(()=>null);
-
-  if(!response.ok){
-
-    const error =
-      new Error(
-        body?.message ||
-        `GitHub request failed (${response.status})`
-      );
-
-    error.status =
-      response.status;
-
-    error.body =
-      body;
-
-    throw error;
-
-  }
-
-  return body;
-}
-
-
-async function getManualRelease(){
-
-  const c =
-    validateConfig();
-
-  const encodedTag =
-    encodeURIComponent(
-      MANUAL_RELEASE_TAG
-    );
-
-  try{
-
-    return await githubJsonRequest(
-      `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases/tags/${encodedTag}`,
-      {
-        method:"GET"
-      }
-    );
-
-  }catch(error){
-
-    if(error.status !== 404){
-      throw error;
-    }
-
-  }
-
-
-  /*
-    No release exists yet. Create one automatically.
-  */
-  return await githubJsonRequest(
-    `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases`,
-    {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        tag_name:MANUAL_RELEASE_TAG,
-        target_commitish:c.branch,
-        name:MANUAL_RELEASE_NAME,
-        body:"Downloadable NILDA instruction manuals used by the public Instruction Hub.",
-        draft:false,
-        prerelease:false,
-        generate_release_notes:false
-      })
-    }
-  );
-}
-
-
-async function listReleaseAssets(
-  releaseId
-){
-
-  const c =
-    validateConfig();
-
-  return await githubJsonRequest(
-    `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases/${encodeURIComponent(releaseId)}/assets?per_page=100`,
-    {
-      method:"GET"
-    }
-  ) || [];
-}
-
-
-async function deleteReleaseAsset(
-  assetId
-){
-
-  const c =
-    validateConfig();
-
-  await githubJsonRequest(
-    `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases/assets/${encodeURIComponent(assetId)}`,
-    {
-      method:"DELETE"
-    }
-  );
-}
-
-
-function releaseAssetFilename(
-  originalFilename
-){
-
-  const projectName =
-    document
-      .getElementById("projectName")
-      .value
-      .trim();
-
-  const productPrefix =
-    slugify(
-      projectName || "instruction-manual"
-    );
-
-  const cleanFilename =
-    safeRepoFilename(
-      originalFilename
-    );
-
-  return `${productPrefix}--${cleanFilename}`;
-}
-
-
-async function uploadPdfAsReleaseAsset(
-  file,
-  statusElement
-){
-
-  const c =
-    validateConfig();
-
-  if(!file){
-
-    throw new Error(
-      "Choose a PDF file first."
-    );
-
-  }
-
-  if(
-    file.type !== "application/pdf" &&
-    !file.name.toLowerCase().endsWith(".pdf")
-  ){
-
-    throw new Error(
-      "Please choose a PDF file."
-    );
-
-  }
-
-  if(file.size > MAX_RELEASE_ASSET_BYTES){
-
-    throw new Error(
-      `${file.name} is larger than GitHub's 2 GiB release-asset limit.`
-    );
-
-  }
-
-  const release =
-    await getManualRelease();
-
-  const assetName =
-    releaseAssetFilename(
-      file.name
-    );
-
-  const assets =
-    await listReleaseAssets(
-      release.id
-    );
-
-  const existing =
-    assets.find(
-      asset =>
-        String(asset.name || "")
-          .toLocaleLowerCase() ===
-        assetName.toLocaleLowerCase()
-    );
-
-  if(existing){
-
-    if(
-      !confirm(
-        `"${assetName}" already exists in the Instruction Manuals release. Replace it?`
-      )
-    ){
-
-      return {
-        cancelled:true
-      };
-
-    }
-
-    statusElement.textContent =
-      `Replacing existing Release Asset "${assetName}"...`;
-
-    await deleteReleaseAsset(
-      existing.id
-    );
-
-  }
-
-  /*
-    GitHub's release asset upload endpoint accepts the raw binary
-    file directly. This avoids Base64-encoding a 79–91 MB PDF.
-  */
-  const uploadBase =
-    String(release.upload_url || "")
-      .replace(
-        /\{\?name,label\}$/,
-        ""
-      );
-
-  if(!uploadBase){
-
-    throw new Error(
-      "GitHub did not return a Release Asset upload URL."
-    );
-
-  }
-
-  const uploadUrl =
-    `${uploadBase}?name=${encodeURIComponent(assetName)}&label=${encodeURIComponent(file.name)}`;
-
-  statusElement.textContent =
-    `Uploading ${file.name} (${formatBytes(file.size)}) as a GitHub Release Asset...`;
-
-  let response;
-
-  try{
-
-    response =
-      await fetch(
-        uploadUrl,
-        {
-          method:"POST",
-          headers:{
-            "Accept":"application/vnd.github+json",
-            "Authorization":`Bearer ${c.token}`,
-            "X-GitHub-Api-Version":"2022-11-28",
-            "Content-Type":file.type || "application/pdf"
-          },
-          body:file
-        }
-      );
-
-  }catch(error){
-
-    throw new Error(
-      "The browser could not reach GitHub's Release Asset upload service. This can happen if GitHub temporarily blocks the cross-origin upload request. Please try again; if it continues, use the release page as a fallback."
-    );
-
-  }
-
-  const body =
-    await response
-      .json()
-      .catch(()=>null);
-
-  if(!response.ok){
-
-    const details =
-      body?.message ||
-      `GitHub Release Asset upload failed (${response.status})`;
-
-    throw new Error(
-      details
-    );
-
-  }
-
-  if(!body?.browser_download_url){
-
-    throw new Error(
-      "GitHub uploaded the PDF but did not return a download URL."
-    );
-
-  }
-
-  return {
-    cancelled:false,
-    asset:body,
-    release
-  };
-}
-
-
-
-/* ============================================================
    LOCAL DEVICE FILE UPLOADS
 
    Videos -> videos/<filename>
@@ -3163,6 +2791,35 @@ async function uploadMediaRow(
     return;
   }
 
+  if(
+    !isVideo &&
+    file.type !== "application/pdf" &&
+    !file.name.toLowerCase().endsWith(".pdf")
+  ){
+
+    status.classList.add(
+      "error"
+    );
+
+    status.textContent =
+      "Please choose a PDF file.";
+
+    return;
+  }
+
+  const folder =
+    isVideo
+      ? "videos"
+      : "pdfs";
+
+  const filename =
+    safeRepoFilename(
+      file.name
+    );
+
+  const path =
+    `${folder}/${filename}`;
+
   try{
 
     validateConfig();
@@ -3173,128 +2830,30 @@ async function uploadMediaRow(
     button.textContent =
       "Uploading...";
 
+    status.textContent =
+      `Preparing ${file.name} (${formatBytes(file.size)})...`;
 
-    /*
-      VIDEOS
-      Continue to use the existing repository upload path because
-      the public site embeds video sources for playback.
-    */
-    if(isVideo){
+    const upload =
+      await uploadBinaryFileToRepository(
+        file,
+        path,
+        `Upload ${isVideo ? "video" : "PDF"}: ${filename}`
+      );
 
-      const filename =
-        safeRepoFilename(
-          file.name
-        );
+    if(upload.cancelled){
 
-      const path =
-        `videos/${filename}`;
-
-      status.textContent =
-        `Preparing ${file.name} (${formatBytes(file.size)})...`;
-
-      const upload =
-        await uploadBinaryFileToRepository(
-          file,
-          path,
-          `Upload video: ${filename}`
-        );
-
-      if(upload.cancelled){
-
-        status.classList.add(
-          "warning"
-        );
-
-        status.textContent =
-          "Upload cancelled.";
-
-        return;
-      }
-
-      pathInput.value =
-        path;
-
-      pathInput.dataset.storage =
-        "repository";
-
-      pathInput.dataset.assetId =
-        "";
-
-      pathInput.dataset.assetName =
-        "";
+      status.classList.add(
+        "warning"
+      );
 
       status.textContent =
-        `Uploaded successfully to ${path}`;
+        "Upload cancelled.";
 
-    }else{
-
-      /*
-        PDFs
-        Upload as a GitHub Release Asset so large manuals do not
-        enter the Git repository history.
-      */
-      const upload =
-        await uploadPdfAsReleaseAsset(
-          file,
-          status
-        );
-
-      if(upload.cancelled){
-
-        status.classList.add(
-          "warning"
-        );
-
-        status.textContent =
-          "Upload cancelled.";
-
-        return;
-      }
-
-      pathInput.value =
-        upload.asset.browser_download_url;
-
-      pathInput.dataset.storage =
-        "release-asset";
-
-      pathInput.dataset.assetId =
-        String(
-          upload.asset.id || ""
-        );
-
-      pathInput.dataset.assetName =
-        upload.asset.name || "";
-
-      status.textContent =
-        `Uploaded successfully as GitHub Release Asset: ${upload.asset.name}`;
-
-      const badge =
-        row.querySelector(
-          ".release-badge"
-        );
-
-      if(!badge){
-
-        const created =
-          document.createElement("div");
-
-        created.className =
-          "release-badge";
-
-        created.textContent =
-          "Stored as GitHub Release Asset";
-
-        row
-          .querySelector("strong")
-          ?.insertAdjacentElement(
-            "afterend",
-            created
-          );
-
-      }
-
+      return;
     }
 
+    pathInput.value =
+      path;
 
     if(
       titleInput &&
@@ -3307,6 +2866,9 @@ async function uploadMediaRow(
           .replace(/[-_]+/g," ");
 
     }
+
+    status.textContent =
+      `Uploaded successfully to ${path}`;
 
   }catch(error){
 
@@ -3329,6 +2891,7 @@ async function uploadMediaRow(
 
   }
 }
+
 
 videoFields.addEventListener(
   "click",
@@ -3713,10 +3276,7 @@ function collectProduct(){
     pdfs:pdfTitles
       .map((t,i) => ({
         title:t.value.trim() || `Instruction PDF ${i+1}`,
-        src:pdfSources[i].value.trim(),
-        storage:pdfSources[i].dataset.storage || "",
-        assetId:pdfSources[i].dataset.assetId || "",
-        assetName:pdfSources[i].dataset.assetName || ""
+        src:pdfSources[i].value.trim()
       }))
       .filter(pdf=>pdf.src)
   };
