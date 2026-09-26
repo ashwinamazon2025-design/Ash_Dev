@@ -55,109 +55,8 @@
     .status{min-height:24px;margin-top:14px;color:var(--good);font-weight:800}
     .error{color:#ff879a}.warning{color:var(--warn)}
     .section{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
-    .video-input{padding:14px;margin-top:10px;border:1px solid #282828;border-radius:14px;background:#0b0b0b}
-    .video-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-
-    .media-section-label{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom:8px;
-    }
-
-    .media-section-label strong{
-      font-size:1rem;
-    }
-
-    .media-section-note{
-      color:#7f9ca3;
-      font-size:.78rem;
-      font-weight:700;
-    }
-
-    .upload-box{
-      grid-column:1/-1;
-
-      margin-top:2px;
-      padding:12px;
-
-      border:1px dashed #33525a;
-      border-radius:12px;
-
-      background:rgba(0,212,255,.035);
-    }
-
-    .upload-box label{
-      margin-bottom:8px;
-      color:#cfe8ed;
-    }
-
-    .upload-row{
-      display:grid;
-      grid-template-columns:minmax(0,1fr) auto;
-      gap:10px;
-      align-items:center;
-    }
-
-    .upload-row input[type="file"]{
-      min-width:0;
-      padding:9px;
-      color:#cfcfcf;
-      background:#080808;
-    }
-
-    .upload-btn{
-      min-width:150px;
-      white-space:nowrap;
-    }
-
-    .upload-status{
-      min-height:20px;
-      margin-top:8px;
-
-      color:#8cff3f;
-
-      font-size:.78rem;
-      font-weight:800;
-      line-height:1.4;
-    }
-
-    .upload-status.error{
-      color:#ff879a;
-    }
-
-    .upload-status.warning{
-      color:#ffc857;
-    }
-
-    .file-size-note{
-      display:block;
-      margin-top:6px;
-
-      color:#777;
-
-      font-size:.72rem;
-      line-height:1.4;
-    }
-
-    .pdf-input{
-      padding:14px;
-      margin-top:10px;
-
-      border:1px solid #282828;
-      border-radius:14px;
-
-      background:#0b0b0b;
-    }
-
-    .pdf-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin-top:10px;
-    }
+    .video-input,.pdf-input{padding:14px;margin-top:10px;border:1px solid #282828;border-radius:14px;background:#0b0b0b}
+    .video-grid,.pdf-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
     .page-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid #242424}
     .page-row small{display:block;color:#858585;margin-top:4px}
     .empty{color:#777}
@@ -465,14 +364,6 @@
       .site-logo{width:62px;height:62px}
       .brand{font-size:1rem;white-space:normal}
       .layout,.form-grid,.video-grid,.pdf-grid{grid-template-columns:1fr}
-
-      .upload-row{
-        grid-template-columns:1fr;
-      }
-
-      .upload-btn{
-        width:100%;
-      }
       .page-row{align-items:flex-start;flex-direction:column}
 
       .console-shell{
@@ -743,7 +634,7 @@
 
           <div>
             <label for="pdfCount">Number of instruction PDFs</label>
-            <input id="pdfCount" type="number" min="0" max="30" value="0">
+            <input id="pdfCount" type="number" min="0" max="25" value="1">
           </div>
 
           <div>
@@ -760,18 +651,13 @@
           </div>
 
           <div class="full">
-            <div class="media-section-label">
-              <label style="margin:0">Video details</label>
-              <span class="media-section-note">Upload from this device or enter an existing path/URL</span>
-            </div>
+            <label>Video details</label>
             <div id="videoFields"></div>
           </div>
 
           <div class="full">
-            <div class="media-section-label">
-              <label style="margin:0">Instruction PDFs</label>
-              <span class="media-section-note">PDFs uploaded here are saved in the public repository's pdfs/ folder</span>
-            </div>
+            <label>Instruction PDF details</label>
+            <p style="margin:5px 0 10px;font-size:.88rem">Add one or more instruction manuals. Upload the PDF files separately to your public repository, then enter their paths below.</p>
             <div id="pdfFields"></div>
           </div>
 
@@ -867,13 +753,20 @@ products/
       </div>
 
       <div class="section">
-        <h2>Video &amp; PDF files</h2>
+        <h2>Video files</h2>
         <p>
-          In the <strong>Product Editor</strong>, you can now choose a video or PDF
-          directly from your device and upload it to the public repository. Videos are
-          saved under <code>videos/</code> and PDFs under <code>pdfs/</code>; the saved
-          path is filled into the product automatically. You can still type an existing
-          repository path or external URL manually if needed.
+          Upload videos separately into the <code>videos/</code> folder of the
+          public website repository. Then enter paths such as
+          <code>videos/project1.mp4</code>.
+        </p>
+      </div>
+
+      <div class="section">
+        <h2>Instruction PDF files</h2>
+        <p>
+          Upload instruction manuals separately into a <code>manuals/</code> folder of the
+          public website repository. Then enter paths such as
+          <code>manuals/diy-robotics-manual.pdf</code>. Multiple PDFs can be attached to each product.
         </p>
       </div>
 
@@ -955,249 +848,72 @@ function slugify(text){
     .replace(/^-+|-+$/g,"");
 }
 
-function currentVideoEntries(){
+function buildVideoFields(){
+  const count = Math.max(1, Math.min(50, Number(videoCount.value) || 1));
+  videoCount.value = count;
+  videoFields.innerHTML = "";
 
-  const titles =
-    [...document.querySelectorAll(".video-title")];
-
-  const sources =
-    [...document.querySelectorAll(".video-src")];
-
-  return titles.map(
-    (title,index)=>({
-      title:title.value,
-      src:sources[index]?.value || ""
-    })
-  );
-}
-
-
-function buildVideoFields(entries=currentVideoEntries()){
-
-  const count =
-    Math.max(
-      1,
-      Math.min(
-        50,
-        Number(videoCount.value) || 1
-      )
-    );
-
-  videoCount.value =
-    count;
-
-  videoFields.innerHTML =
-    "";
-
-  for(let i=0;i<count;i++){
-
-    const saved =
-      entries[i] || {};
-
-    const div =
-      document.createElement("div");
-
-    div.className =
-      "video-input";
-
+  for(let i=1;i<=count;i++){
+    const div = document.createElement("div");
+    div.className = "video-input";
     div.innerHTML = `
-      <strong>Video ${i + 1}</strong>
-
+      <strong>Video ${i}</strong>
       <div class="video-grid">
-
         <div>
           <label>Video title</label>
-
-          <input
-            class="video-title"
-            placeholder="Example: Assemble the chassis"
-            value="${escapeHtml(saved.title || "")}"
-          >
+          <input class="video-title" placeholder="Example: Assemble the chassis">
         </div>
-
         <div>
           <label>Video file path or URL</label>
-
-          <input
-            class="video-src"
-            placeholder="videos/example.mp4"
-            value="${escapeHtml(saved.src || "")}"
-          >
+          <input class="video-src" placeholder="videos/example.mp4">
         </div>
-
-        <div class="upload-box">
-          <label>Upload video from this device</label>
-
-          <div class="upload-row">
-
-            <input
-              class="video-local-file"
-              type="file"
-              accept="video/*,.mp4,.mov,.m4v,.webm"
-            >
-
-            <button
-              type="button"
-              class="secondary upload-btn upload-video-btn"
-            >
-              Upload Video
-            </button>
-
-          </div>
-
-          <div class="upload-status"></div>
-
-          <small class="file-size-note">
-            The file is uploaded directly to the public GitHub repository and the
-            path above is filled automatically. Files larger than 95 MB are not
-            uploaded through this browser tool.
-          </small>
-        </div>
-
-      </div>
-    `;
-
-    videoFields.appendChild(
-      div
-    );
-
+      </div>`;
+    videoFields.appendChild(div);
   }
 }
 
+videoCount.addEventListener("input", buildVideoFields);
+buildVideoFields();
 
-function currentPdfEntries(){
-
-  const titles =
-    [...document.querySelectorAll(".pdf-title")];
-
-  const sources =
-    [...document.querySelectorAll(".pdf-src")];
-
-  return titles.map(
-    (title,index)=>({
-      title:title.value,
-      src:sources[index]?.value || ""
-    })
-  );
-}
-
-
-function buildPdfFields(entries=currentPdfEntries()){
-
-  const count =
-    Math.max(
-      0,
-      Math.min(
-        30,
-        Number(pdfCount.value) || 0
-      )
-    );
-
-  pdfCount.value =
-    count;
-
-  pdfFields.innerHTML =
-    "";
-
-  if(count === 0){
-
-    pdfFields.innerHTML =
-      '<div class="empty">No instruction PDFs added. Increase "Number of instruction PDFs" above to add one.</div>';
-
-    return;
-  }
+function buildPdfFields(existingPdfs=[]){
+  const count = Math.max(0, Math.min(25, Number(pdfCount.value) || 0));
+  pdfCount.value = count;
+  pdfFields.innerHTML = "";
 
   for(let i=0;i<count;i++){
-
-    const saved =
-      entries[i] || {};
-
-    const div =
-      document.createElement("div");
-
-    div.className =
-      "pdf-input";
-
+    const pdf = existingPdfs[i] || {};
+    const div = document.createElement("div");
+    div.className = "pdf-input";
     div.innerHTML = `
-      <strong>Instruction PDF ${i + 1}</strong>
-
+      <strong>Instruction PDF ${i+1}</strong>
       <div class="pdf-grid">
-
         <div>
           <label>PDF title</label>
-
-          <input
-            class="pdf-title"
-            placeholder="Example: Instruction Manual"
-            value="${escapeHtml(saved.title || "")}"
-          >
+          <input class="pdf-title" placeholder="Example: Complete Instruction Manual" value="${escapeHtml(pdf.title || "")}">
         </div>
-
         <div>
           <label>PDF file path or URL</label>
-
-          <input
-            class="pdf-src"
-            placeholder="pdfs/instruction-manual.pdf"
-            value="${escapeHtml(saved.src || "")}"
-          >
+          <input class="pdf-src" placeholder="manuals/example-manual.pdf" value="${escapeHtml(pdf.src || pdf.url || "")}">
         </div>
-
-        <div class="upload-box">
-          <label>Upload PDF from this device</label>
-
-          <div class="upload-row">
-
-            <input
-              class="pdf-local-file"
-              type="file"
-              accept="application/pdf,.pdf"
-            >
-
-            <button
-              type="button"
-              class="secondary upload-btn upload-pdf-btn"
-            >
-              Upload PDF
-            </button>
-
-          </div>
-
-          <div class="upload-status"></div>
-
-          <small class="file-size-note">
-            The PDF is uploaded directly to the public GitHub repository's
-            pdfs/ folder and the path above is filled automatically.
-          </small>
-        </div>
-
-      </div>
-    `;
-
-    pdfFields.appendChild(
-      div
-    );
-
+      </div>`;
+    pdfFields.appendChild(div);
   }
 }
 
+function collectCurrentPdfFields(){
+  const titles = [...document.querySelectorAll(".pdf-title")];
+  const sources = [...document.querySelectorAll(".pdf-src")];
+  return titles.map((t,i)=>({
+    title:t.value.trim(),
+    src:sources[i]?.value.trim() || ""
+  }));
+}
 
-videoCount.addEventListener(
-  "input",
-  ()=>buildVideoFields()
-);
-
-
-pdfCount.addEventListener(
-  "input",
-  ()=>buildPdfFields()
-);
-
-
-buildVideoFields();
+pdfCount.addEventListener("input", ()=>{
+  const existing = collectCurrentPdfFields();
+  buildPdfFields(existing);
+});
 buildPdfFields();
-
-
 
 
 /* ============================================================
@@ -2516,438 +2232,6 @@ renderSubcategoryManager();
 
 
 
-
-/* ============================================================
-   LOCAL DEVICE FILE UPLOADS
-
-   Videos -> videos/<filename>
-   PDFs   -> pdfs/<filename>
-
-   Uploads use the authenticated GitHub Contents API connection
-   already configured in this Developer Console.
-   ============================================================ */
-
-const MAX_BROWSER_UPLOAD_BYTES =
-  95 * 1024 * 1024;
-
-
-function formatBytes(bytes){
-
-  if(!Number.isFinite(bytes)){
-    return "";
-  }
-
-  if(bytes < 1024){
-    return `${bytes} B`;
-  }
-
-  if(bytes < 1024 * 1024){
-    return `${(bytes / 1024).toFixed(1)} KB`;
-  }
-
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
-
-
-function safeRepoFilename(filename){
-
-  const value =
-    String(filename || "file")
-      .trim();
-
-  const dot =
-    value.lastIndexOf(".");
-
-  const hasExtension =
-    dot > 0 &&
-    dot < value.length - 1;
-
-  const name =
-    hasExtension
-      ? value.slice(0,dot)
-      : value;
-
-  const extension =
-    hasExtension
-      ? value.slice(dot).toLowerCase()
-      : "";
-
-  const safeName =
-    name
-      .normalize("NFKD")
-      .replace(/[^\w.-]+/g,"-")
-      .replace(/-+/g,"-")
-      .replace(/^[-.]+|[-.]+$/g,"")
-      .toLowerCase() ||
-    "file";
-
-  return safeName + extension;
-}
-
-
-function fileToBase64(file){
-
-  return new Promise(
-    (resolve,reject)=>{
-
-      const reader =
-        new FileReader();
-
-      reader.onerror =
-        ()=>reject(
-          new Error(
-            `Could not read "${file.name}".`
-          )
-        );
-
-      reader.onload =
-        ()=>{
-
-          const result =
-            String(reader.result || "");
-
-          const comma =
-            result.indexOf(",");
-
-          resolve(
-            comma >= 0
-              ? result.slice(comma + 1)
-              : result
-          );
-
-        };
-
-      reader.readAsDataURL(
-        file
-      );
-
-    }
-  );
-}
-
-
-async function getFileMetadata(path){
-
-  const c =
-    validateConfig();
-
-  try{
-
-    return await githubRequest(
-      `${contentsUrl(path)}?ref=${encodeURIComponent(c.branch)}`,
-      {
-        method:"GET",
-        headers:{
-          "Accept":"application/vnd.github.object+json"
-        }
-      }
-    );
-
-  }catch(error){
-
-    if(error.status === 404){
-      return null;
-    }
-
-    throw error;
-
-  }
-}
-
-
-async function uploadBinaryFileToRepository(
-  file,
-  path,
-  message
-){
-
-  const c =
-    validateConfig();
-
-  if(!file){
-    throw new Error(
-      "Choose a local file first."
-    );
-  }
-
-  if(file.size > MAX_BROWSER_UPLOAD_BYTES){
-
-    throw new Error(
-      `${file.name} is ${formatBytes(file.size)}. Browser uploads are limited to 95 MB here. Use Git/Git LFS or another hosting method for larger files.`
-    );
-
-  }
-
-  const existing =
-    await getFileMetadata(
-      path
-    );
-
-  if(
-    existing?.sha &&
-    !confirm(
-      `"${path}" already exists in the repository. Replace it?`
-    )
-  ){
-    return {
-      cancelled:true
-    };
-  }
-
-  const base64 =
-    await fileToBase64(
-      file
-    );
-
-  const body = {
-    message,
-    content:base64,
-    branch:c.branch
-  };
-
-  if(existing?.sha){
-    body.sha =
-      existing.sha;
-  }
-
-  const result =
-    await githubRequest(
-      contentsUrl(path),
-      {
-        method:"PUT",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify(body)
-      }
-    );
-
-  return {
-    cancelled:false,
-    result
-  };
-}
-
-
-async function uploadMediaRow(
-  row,
-  type
-){
-
-  const isVideo =
-    type === "video";
-
-  const fileInput =
-    row.querySelector(
-      isVideo
-        ? ".video-local-file"
-        : ".pdf-local-file"
-    );
-
-  const pathInput =
-    row.querySelector(
-      isVideo
-        ? ".video-src"
-        : ".pdf-src"
-    );
-
-  const titleInput =
-    row.querySelector(
-      isVideo
-        ? ".video-title"
-        : ".pdf-title"
-    );
-
-  const button =
-    row.querySelector(
-      isVideo
-        ? ".upload-video-btn"
-        : ".upload-pdf-btn"
-    );
-
-  const status =
-    row.querySelector(
-      ".upload-status"
-    );
-
-  const file =
-    fileInput?.files?.[0];
-
-  status.className =
-    "upload-status";
-
-  status.textContent =
-    "";
-
-  if(!file){
-
-    status.classList.add(
-      "warning"
-    );
-
-    status.textContent =
-      "Choose a file first.";
-
-    return;
-  }
-
-  if(
-    !isVideo &&
-    file.type !== "application/pdf" &&
-    !file.name.toLowerCase().endsWith(".pdf")
-  ){
-
-    status.classList.add(
-      "error"
-    );
-
-    status.textContent =
-      "Please choose a PDF file.";
-
-    return;
-  }
-
-  const folder =
-    isVideo
-      ? "videos"
-      : "pdfs";
-
-  const filename =
-    safeRepoFilename(
-      file.name
-    );
-
-  const path =
-    `${folder}/${filename}`;
-
-  try{
-
-    validateConfig();
-
-    button.disabled =
-      true;
-
-    button.textContent =
-      "Uploading...";
-
-    status.textContent =
-      `Preparing ${file.name} (${formatBytes(file.size)})...`;
-
-    const upload =
-      await uploadBinaryFileToRepository(
-        file,
-        path,
-        `Upload ${isVideo ? "video" : "PDF"}: ${filename}`
-      );
-
-    if(upload.cancelled){
-
-      status.classList.add(
-        "warning"
-      );
-
-      status.textContent =
-        "Upload cancelled.";
-
-      return;
-    }
-
-    pathInput.value =
-      path;
-
-    if(
-      titleInput &&
-      !titleInput.value.trim()
-    ){
-
-      titleInput.value =
-        file.name
-          .replace(/\.[^.]+$/,"")
-          .replace(/[-_]+/g," ");
-
-    }
-
-    status.textContent =
-      `Uploaded successfully to ${path}`;
-
-  }catch(error){
-
-    status.classList.add(
-      "error"
-    );
-
-    status.textContent =
-      error.message;
-
-  }finally{
-
-    button.disabled =
-      false;
-
-    button.textContent =
-      isVideo
-        ? "Upload Video"
-        : "Upload PDF";
-
-  }
-}
-
-
-videoFields.addEventListener(
-  "click",
-  event=>{
-
-    const button =
-      event.target.closest(
-        ".upload-video-btn"
-      );
-
-    if(!button){
-      return;
-    }
-
-    const row =
-      button.closest(
-        ".video-input"
-      );
-
-    uploadMediaRow(
-      row,
-      "video"
-    );
-
-  }
-);
-
-
-pdfFields.addEventListener(
-  "click",
-  event=>{
-
-    const button =
-      event.target.closest(
-        ".upload-pdf-btn"
-      );
-
-    if(!button){
-      return;
-    }
-
-    const row =
-      button.closest(
-        ".pdf-input"
-      );
-
-    uploadMediaRow(
-      row,
-      "pdf"
-    );
-
-  }
-);
-
-
-
 function getConfig(){
   return {
     owner: document.getElementById("ghOwner").value.trim(),
@@ -3166,39 +2450,26 @@ function loadForEditing(product){
   document.getElementById("extraNotes").value = product.extraNotes || "";
   document.getElementById("layoutStyle").value = product.layout || "grid";
 
-  const vids =
-    Array.isArray(product.videos)
-      ? product.videos
-      : [];
+  const vids = Array.isArray(product.videos) ? product.videos : [];
+  videoCount.value = Math.max(1,vids.length || 1);
+  buildVideoFields();
 
-  videoCount.value =
-    Math.max(
-      1,
-      vids.length || 1
-    );
+  [...document.querySelectorAll(".video-title")].forEach((el,i) => el.value = vids[i]?.title || "");
+  [...document.querySelectorAll(".video-src")].forEach((el,i) => el.value = vids[i]?.src || "");
 
-  buildVideoFields(
-    vids
-  );
+  let pdfs = Array.isArray(product.pdfs) ? product.pdfs : [];
+  if(!pdfs.length){
+    const legacyPdf = product.pdf || product.manualPdf || product.instructionManual || product.pdfUrl || "";
+    if(legacyPdf){
+      pdfs = [{
+        title:"Instruction Manual",
+        src:legacyPdf
+      }];
+    }
+  }
 
-  const pdfs =
-    Array.isArray(product.pdfs)
-      ? product.pdfs
-      : (
-          Array.isArray(product.manuals)
-            ? product.manuals
-            : []
-        );
-
-  pdfCount.value =
-    Math.max(
-      0,
-      pdfs.length
-    );
-
-  buildPdfFields(
-    pdfs
-  );
+  pdfCount.value = pdfs.length;
+  buildPdfFields(pdfs);
 
   window.scrollTo({
     top:document.getElementById("projectName").getBoundingClientRect().top + window.scrollY - 110,
@@ -3209,53 +2480,17 @@ function loadForEditing(product){
 }
 
 function collectProduct(){
+  const titles = [...document.querySelectorAll(".video-title")];
+  const sources = [...document.querySelectorAll(".video-src")];
+  const pdfTitles = [...document.querySelectorAll(".pdf-title")];
+  const pdfSources = [...document.querySelectorAll(".pdf-src")];
 
-  const titles =
-    [...document.querySelectorAll(".video-title")];
-
-  const sources =
-    [...document.querySelectorAll(".video-src")];
-
-  const pdfTitles =
-    [...document.querySelectorAll(".pdf-title")];
-
-  const pdfSources =
-    [...document.querySelectorAll(".pdf-src")];
-
-  const pendingVideoUploads =
-    [...document.querySelectorAll(".video-local-file")]
-      .some(
-        input =>
-          input.files?.length &&
-          !input
-            .closest(".video-input")
-            ?.querySelector(".video-src")
-            ?.value
-            .trim()
-      );
-
-  const pendingPdfUploads =
-    [...document.querySelectorAll(".pdf-local-file")]
-      .some(
-        input =>
-          input.files?.length &&
-          !input
-            .closest(".pdf-input")
-            ?.querySelector(".pdf-src")
-            ?.value
-            .trim()
-      );
-
-  if(
-    pendingVideoUploads ||
-    pendingPdfUploads
-  ){
-
-    throw new Error(
-      "A local file has been selected but not uploaded yet. Click its Upload button before saving the product."
-    );
-
-  }
+  const pdfs = pdfTitles
+    .map((t,i)=>({
+      title:t.value.trim() || `Instruction PDF ${i+1}`,
+      src:pdfSources[i]?.value.trim() || ""
+    }))
+    .filter(pdf=>pdf.src);
 
   return {
     name:document.getElementById("projectName").value.trim(),
@@ -3266,19 +2501,12 @@ function collectProduct(){
     description:document.getElementById("description").value.trim(),
     extraNotes:document.getElementById("extraNotes").value.trim(),
     layout:document.getElementById("layoutStyle").value,
-    videos:titles
-      .map((t,i) => ({
-        title:t.value.trim() || `Instruction Video ${i+1}`,
-        src:sources[i].value.trim()
-      }))
-      .filter(video=>video.src),
-
-    pdfs:pdfTitles
-      .map((t,i) => ({
-        title:t.value.trim() || `Instruction PDF ${i+1}`,
-        src:pdfSources[i].value.trim()
-      }))
-      .filter(pdf=>pdf.src)
+    videos:titles.map((t,i) => ({
+      title:t.value.trim() || `Instruction Video ${i+1}`,
+      src:sources[i].value.trim()
+    })),
+    pdfs,
+    pdf:pdfs[0]?.src || ""
   };
 }
 
@@ -3299,20 +2527,10 @@ function clearForm(){
   );
 
   document.getElementById("layoutStyle").value = "grid";
-
-  videoCount.value =
-    3;
-
-  buildVideoFields(
-    []
-  );
-
-  pdfCount.value =
-    0;
-
-  buildPdfFields(
-    []
-  );
+  videoCount.value = 3;
+  buildVideoFields();
+  pdfCount.value = 1;
+  buildPdfFields();
 }
 
 document.getElementById("clearBtn").addEventListener("click", clearForm);
@@ -3717,7 +2935,7 @@ function organizeDeveloperConsole(){
     createPanel(
       "products",
       "Product Editor",
-      "Create or edit a product, upload videos and instruction PDFs from your device, and manage its public page details.",
+      "Create a new public product page or load an existing product and update its details, videos and instruction PDFs.",
       "Content"
     );
 
@@ -3802,7 +3020,7 @@ function organizeDeveloperConsole(){
     createPanel(
       "help",
       "Help & Repository Guide",
-      "Reference information for repository structure, video paths and GitHub token permissions.",
+      "Reference information for repository structure, video paths, PDF paths and GitHub token permissions.",
       "Reference"
     );
 
