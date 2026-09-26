@@ -856,32 +856,8 @@
           <div class="full">
             <div class="media-section-label">
               <label style="margin:0">Video details</label>
-              <span class="media-section-note">Large videos are uploaded on GitHub, then selected here</span>
+              <span class="media-section-note">Upload from this device or enter an existing path/URL</span>
             </div>
-
-            <div class="release-manager">
-              <div class="release-manager-copy">
-                <strong>GitHub Release Video Manager</strong>
-                <span>
-                  1. Open the GitHub video upload page &nbsp;→&nbsp;
-                  2. upload your video there &nbsp;→&nbsp;
-                  3. return here and refresh the video list.
-                </span>
-              </div>
-
-              <div class="release-manager-actions">
-                <button type="button" id="openVideoReleaseBtn" class="primary">
-                  Open GitHub Video Upload Page
-                </button>
-
-                <button type="button" id="refreshVideoAssetsBtn" class="secondary">
-                  Refresh Release Videos
-                </button>
-              </div>
-
-              <div id="videoReleaseStatus" class="status"></div>
-            </div>
-
             <div id="videoFields"></div>
           </div>
 
@@ -1017,14 +993,13 @@ products/
       </div>
 
       <div class="section">
-        <h2>Video &amp; PDF Release Assets</h2>
+        <h2>Video &amp; PDF files</h2>
         <p>
-          Videos and large instruction PDFs now use the same GitHub Release workflow.
-          For videos, click <strong>Open GitHub Video Upload Page</strong>, upload the video,
-          return here and click <strong>Refresh Release Videos</strong>. For PDFs, use
-          <strong>Open GitHub Upload Page</strong> and <strong>Refresh Release PDFs</strong>.
-          Then choose the uploaded Release Asset for the product. The GitHub download URL is
-          saved into the product automatically.
+          Videos can still be uploaded directly from the <strong>Product Editor</strong>.
+          For large instruction PDFs, click <strong>Open GitHub Upload Page</strong>, upload
+          the PDF using GitHub's own Release page, return to this Developer Console, and click
+          <strong>Refresh Release PDFs</strong>. Then choose the uploaded PDF for the product.
+          The Release Asset download URL is saved into the product automatically.
         </p>
       </div>
 
@@ -1044,13 +1019,6 @@ products/
 <script>
 const videoFields = document.getElementById("videoFields");
 const videoCount = document.getElementById("videoCount");
-const openVideoReleaseBtn = document.getElementById("openVideoReleaseBtn");
-const refreshVideoAssetsBtn = document.getElementById("refreshVideoAssetsBtn");
-const videoReleaseStatus = document.getElementById("videoReleaseStatus");
-
-let videoReleaseAssets = [];
-let videoReleaseInfo = null;
-
 const pdfFields = document.getElementById("pdfFields");
 const pdfCount = document.getElementById("pdfCount");
 const openManualReleaseBtn = document.getElementById("openManualReleaseBtn");
@@ -1130,53 +1098,10 @@ function currentVideoEntries(){
   return titles.map(
     (title,index)=>({
       title:title.value,
-      src:sources[index]?.value || "",
-      storage:sources[index]?.dataset.storage || "",
-      assetId:sources[index]?.dataset.assetId || "",
-      assetName:sources[index]?.dataset.assetName || ""
+      src:sources[index]?.value || ""
     })
   );
 }
-
-
-function readableVideoAssetName(asset){
-  return String(asset?.label || asset?.name || "Instruction Video");
-}
-
-function videoReleaseAssetOptionMarkup(selectedAssetId="",selectedUrl=""){
-  const selectedId = String(selectedAssetId || "");
-  const options = [
-    '<option value="">Select a video uploaded to the GitHub Release</option>'
-  ];
-
-  for(const asset of videoReleaseAssets){
-    const id = String(asset.id || "");
-    const selected =
-      (selectedId && id === selectedId) ||
-      (!selectedId && selectedUrl && asset.browser_download_url === selectedUrl);
-
-    options.push(
-      `<option value="${escapeHtml(id)}" ${selected ? "selected" : ""}>${escapeHtml(readableVideoAssetName(asset))} (${escapeHtml(formatBytes(Number(asset.size) || 0))})</option>`
-    );
-  }
-
-  return options.join("");
-}
-
-function refreshVideoReleaseSelectors(){
-  document.querySelectorAll(".video-input").forEach(row=>{
-    const select = row.querySelector(".video-release-asset-select");
-    const source = row.querySelector(".video-src");
-
-    if(!select || !source) return;
-
-    select.innerHTML = videoReleaseAssetOptionMarkup(
-      source.dataset.assetId || "",
-      source.value.trim()
-    );
-  });
-}
-
 
 
 function buildVideoFields(entries=currentVideoEntries()){
@@ -1190,28 +1115,31 @@ function buildVideoFields(entries=currentVideoEntries()){
       )
     );
 
-  videoCount.value = count;
-  videoFields.innerHTML = "";
+  videoCount.value =
+    count;
+
+  videoFields.innerHTML =
+    "";
 
   for(let i=0;i<count;i++){
 
-    const saved = entries[i] || {};
-    const div = document.createElement("div");
-    div.className = "video-input";
+    const saved =
+      entries[i] || {};
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "video-input";
 
     div.innerHTML = `
       <strong>Video ${i + 1}</strong>
-
-      ${
-        saved.storage === "release-asset"
-          ? '<div class="release-badge">Linked to GitHub Release Asset</div>'
-          : ""
-      }
 
       <div class="video-grid">
 
         <div>
           <label>Video title</label>
+
           <input
             class="video-title"
             placeholder="Example: Assemble the chassis"
@@ -1221,44 +1149,53 @@ function buildVideoFields(entries=currentVideoEntries()){
 
         <div>
           <label>Video file path or URL</label>
+
           <input
             class="video-src"
-            placeholder="Choose an uploaded Release video below, or paste a URL"
+            placeholder="videos/example.mp4"
             value="${escapeHtml(saved.src || "")}"
-            data-storage="${escapeHtml(saved.storage || "")}"
-            data-asset-id="${escapeHtml(saved.assetId || "")}"
-            data-asset-name="${escapeHtml(saved.assetName || "")}"
           >
         </div>
 
         <div class="upload-box">
-          <label>Select a video already uploaded to GitHub</label>
+          <label>Upload video from this device</label>
 
-          <div class="release-select-row">
-            <select class="video-release-asset-select">
-              ${videoReleaseAssetOptionMarkup(saved.assetId || "", saved.src || "")}
-            </select>
+          <div class="upload-row">
 
-            <button type="button" class="secondary use-release-video-btn">
-              Use Selected Video
+            <input
+              class="video-local-file"
+              type="file"
+              accept="video/*,.mp4,.mov,.m4v,.webm"
+            >
+
+            <button
+              type="button"
+              class="secondary upload-btn upload-video-btn"
+            >
+              Upload Video
             </button>
+
           </div>
 
           <div class="upload-status"></div>
 
           <small class="file-size-note">
-            To add a new video, use <strong>Open GitHub Video Upload Page</strong> above.
-            After GitHub finishes the upload, return here and click
-            <strong>Refresh Release Videos</strong>.
+            The file is uploaded directly to the public GitHub repository and the
+            path above is filled automatically. Files larger than 95 MB are not
+            uploaded through this browser tool.
           </small>
         </div>
 
       </div>
     `;
 
-    videoFields.appendChild(div);
+    videoFields.appendChild(
+      div
+    );
+
   }
 }
+
 
 function currentPdfEntries(){
 
@@ -2823,203 +2760,6 @@ renderSubcategoryManager();
 
 
 /* ============================================================
-   GITHUB RELEASE VIDEO MANAGER
-   ============================================================ */
-
-const VIDEO_RELEASE_TAG = "instruction-videos";
-const VIDEO_RELEASE_NAME = "NILDA Instruction Videos";
-
-async function getVideoRelease(){
-
-  const c = validateConfig();
-  const encodedTag = encodeURIComponent(VIDEO_RELEASE_TAG);
-
-  try{
-    const release = await githubJsonRequest(
-      `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases/tags/${encodedTag}`,
-      {method:"GET"}
-    );
-
-    videoReleaseInfo = release;
-    return release;
-
-  }catch(error){
-    if(error.status !== 404) throw error;
-  }
-
-  videoReleaseStatus.textContent =
-    "Creating the Instruction Videos release...";
-
-  const release = await githubJsonRequest(
-    `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases`,
-    {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        tag_name:VIDEO_RELEASE_TAG,
-        target_commitish:c.branch,
-        name:VIDEO_RELEASE_NAME,
-        body:"NILDA instruction videos used by the public Instruction Hub.",
-        draft:false,
-        prerelease:false,
-        generate_release_notes:false
-      })
-    }
-  );
-
-  videoReleaseInfo = release;
-  return release;
-}
-
-function videoReleaseEditUrl(){
-  const c = validateConfig();
-
-  return (
-    `https://github.com/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}` +
-    `/releases/edit/${encodeURIComponent(VIDEO_RELEASE_TAG)}`
-  );
-}
-
-async function openVideoReleaseUploadPage(){
-
-  videoReleaseStatus.className = "status";
-  const popup = window.open("about:blank","_blank");
-
-  try{
-    validateConfig();
-
-    openVideoReleaseBtn.disabled = true;
-    openVideoReleaseBtn.textContent = "Preparing GitHub...";
-    videoReleaseStatus.textContent =
-      "Preparing the GitHub Instruction Videos release...";
-
-    await getVideoRelease();
-
-    const url = videoReleaseEditUrl();
-
-    if(popup){
-      popup.opener = null;
-      popup.location.href = url;
-    }else{
-      window.open(url,"_blank","noopener,noreferrer");
-    }
-
-    videoReleaseStatus.textContent =
-      "GitHub opened in a new tab. Upload the video there, wait for GitHub to finish, then return here and click Refresh Release Videos.";
-
-  }catch(error){
-
-    if(popup && !popup.closed) popup.close();
-
-    videoReleaseStatus.innerHTML =
-      `<span class="error">${escapeHtml(error.message)}</span>`;
-
-  }finally{
-    openVideoReleaseBtn.disabled = false;
-    openVideoReleaseBtn.textContent = "Open GitHub Video Upload Page";
-  }
-}
-
-async function refreshVideoReleaseAssets(){
-
-  videoReleaseStatus.className = "status";
-
-  try{
-    validateConfig();
-
-    refreshVideoAssetsBtn.disabled = true;
-    refreshVideoAssetsBtn.textContent = "Refreshing...";
-    videoReleaseStatus.textContent =
-      "Reading videos from the GitHub Instruction Videos release...";
-
-    const release = await getVideoRelease();
-    const assets = await listReleaseAssets(release.id);
-
-    const videoExtensions = /\.(mp4|m4v|mov|webm|ogv|ogg)$/i;
-
-    videoReleaseAssets =
-      assets
-        .filter(asset =>
-          videoExtensions.test(String(asset.name || "")) ||
-          String(asset.content_type || "").toLowerCase().startsWith("video/")
-        )
-        .sort((a,b)=>
-          String(a.name || "").localeCompare(
-            String(b.name || ""),
-            undefined,
-            {numeric:true,sensitivity:"base"}
-          )
-        );
-
-    refreshVideoReleaseSelectors();
-
-    if(videoReleaseAssets.length){
-      videoReleaseStatus.textContent =
-        `${videoReleaseAssets.length} video${videoReleaseAssets.length === 1 ? "" : "s"} found. Choose the correct video in each Video row below.`;
-    }else{
-      videoReleaseStatus.innerHTML =
-        '<span class="warning">No videos were found in the Instruction Videos release. Open GitHub Video Upload Page, upload a video, save/update the release, then refresh again.</span>';
-    }
-
-  }catch(error){
-
-    videoReleaseStatus.innerHTML =
-      `<span class="error">${escapeHtml(error.message)}</span>`;
-
-  }finally{
-    refreshVideoAssetsBtn.disabled = false;
-    refreshVideoAssetsBtn.textContent = "Refresh Release Videos";
-  }
-}
-
-function useSelectedReleaseVideo(row){
-
-  const select = row.querySelector(".video-release-asset-select");
-  const source = row.querySelector(".video-src");
-  const title = row.querySelector(".video-title");
-  const status = row.querySelector(".upload-status");
-
-  status.className = "upload-status";
-
-  const asset =
-    videoReleaseAssets.find(
-      item => String(item.id || "") === String(select.value || "")
-    );
-
-  if(!asset){
-    status.classList.add("warning");
-    status.textContent =
-      "Choose a video from the refreshed Release Video list first.";
-    return;
-  }
-
-  source.value = asset.browser_download_url || "";
-  source.dataset.storage = "release-asset";
-  source.dataset.assetId = String(asset.id || "");
-  source.dataset.assetName = asset.name || "";
-
-  if(title && !title.value.trim()){
-    title.value =
-      String(asset.name || "Instruction Video")
-        .replace(/\.[^.]+$/,"")
-        .replace(/[-_]+/g," ");
-  }
-
-  let badge = row.querySelector(".release-badge");
-
-  if(!badge){
-    badge = document.createElement("div");
-    badge.className = "release-badge";
-    row.querySelector("strong")?.insertAdjacentElement("afterend",badge);
-  }
-
-  badge.textContent = "Linked to GitHub Release Asset";
-  status.textContent = `Selected: ${asset.name}`;
-}
-
-
-
-/* ============================================================
    GITHUB RELEASE PDF MANAGER
 
    Workflow:
@@ -3461,8 +3201,18 @@ function useSelectedReleasePdf(
 
 
 /* ============================================================
-   SHARED FILE DISPLAY HELPER
+   LOCAL DEVICE FILE UPLOADS
+
+   Videos -> videos/<filename>
+
+   Video uploads use the authenticated GitHub Contents API connection
+   already configured in this Developer Console. Large instruction PDFs
+   are handled separately through GitHub's Release page.
    ============================================================ */
+
+const MAX_BROWSER_UPLOAD_BYTES =
+  95 * 1024 * 1024;
+
 
 function formatBytes(bytes){
 
@@ -3482,6 +3232,313 @@ function formatBytes(bytes){
 }
 
 
+function safeRepoFilename(filename){
+
+  const value =
+    String(filename || "file")
+      .trim();
+
+  const dot =
+    value.lastIndexOf(".");
+
+  const hasExtension =
+    dot > 0 &&
+    dot < value.length - 1;
+
+  const name =
+    hasExtension
+      ? value.slice(0,dot)
+      : value;
+
+  const extension =
+    hasExtension
+      ? value.slice(dot).toLowerCase()
+      : "";
+
+  const safeName =
+    name
+      .normalize("NFKD")
+      .replace(/[^\w.-]+/g,"-")
+      .replace(/-+/g,"-")
+      .replace(/^[-.]+|[-.]+$/g,"")
+      .toLowerCase() ||
+    "file";
+
+  return safeName + extension;
+}
+
+
+function fileToBase64(file){
+
+  return new Promise(
+    (resolve,reject)=>{
+
+      const reader =
+        new FileReader();
+
+      reader.onerror =
+        ()=>reject(
+          new Error(
+            `Could not read "${file.name}".`
+          )
+        );
+
+      reader.onload =
+        ()=>{
+
+          const result =
+            String(reader.result || "");
+
+          const comma =
+            result.indexOf(",");
+
+          resolve(
+            comma >= 0
+              ? result.slice(comma + 1)
+              : result
+          );
+
+        };
+
+      reader.readAsDataURL(
+        file
+      );
+
+    }
+  );
+}
+
+
+async function getFileMetadata(path){
+
+  const c =
+    validateConfig();
+
+  try{
+
+    return await githubRequest(
+      `${contentsUrl(path)}?ref=${encodeURIComponent(c.branch)}`,
+      {
+        method:"GET",
+        headers:{
+          "Accept":"application/vnd.github.object+json"
+        }
+      }
+    );
+
+  }catch(error){
+
+    if(error.status === 404){
+      return null;
+    }
+
+    throw error;
+
+  }
+}
+
+
+async function uploadBinaryFileToRepository(
+  file,
+  path,
+  message
+){
+
+  const c =
+    validateConfig();
+
+  if(!file){
+    throw new Error(
+      "Choose a local file first."
+    );
+  }
+
+  if(file.size > MAX_BROWSER_UPLOAD_BYTES){
+
+    throw new Error(
+      `${file.name} is ${formatBytes(file.size)}. Browser uploads are limited to 95 MB here. Use Git/Git LFS or another hosting method for larger files.`
+    );
+
+  }
+
+  const existing =
+    await getFileMetadata(
+      path
+    );
+
+  if(
+    existing?.sha &&
+    !confirm(
+      `"${path}" already exists in the repository. Replace it?`
+    )
+  ){
+    return {
+      cancelled:true
+    };
+  }
+
+  const base64 =
+    await fileToBase64(
+      file
+    );
+
+  const body = {
+    message,
+    content:base64,
+    branch:c.branch
+  };
+
+  if(existing?.sha){
+    body.sha =
+      existing.sha;
+  }
+
+  const result =
+    await githubRequest(
+      contentsUrl(path),
+      {
+        method:"PUT",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify(body)
+      }
+    );
+
+  return {
+    cancelled:false,
+    result
+  };
+}
+
+
+async function uploadVideoRow(
+  row
+){
+
+  const fileInput =
+    row.querySelector(
+      ".video-local-file"
+    );
+
+  const pathInput =
+    row.querySelector(
+      ".video-src"
+    );
+
+  const titleInput =
+    row.querySelector(
+      ".video-title"
+    );
+
+  const button =
+    row.querySelector(
+      ".upload-video-btn"
+    );
+
+  const status =
+    row.querySelector(
+      ".upload-status"
+    );
+
+  const file =
+    fileInput?.files?.[0];
+
+  status.className =
+    "upload-status";
+
+  status.textContent =
+    "";
+
+  if(!file){
+
+    status.classList.add(
+      "warning"
+    );
+
+    status.textContent =
+      "Choose a video file first.";
+
+    return;
+  }
+
+  try{
+
+    validateConfig();
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "Uploading...";
+
+    const filename =
+      safeRepoFilename(
+        file.name
+      );
+
+    const path =
+      `videos/${filename}`;
+
+    status.textContent =
+      `Preparing ${file.name} (${formatBytes(file.size)})...`;
+
+    const upload =
+      await uploadBinaryFileToRepository(
+        file,
+        path,
+        `Upload video: ${filename}`
+      );
+
+    if(upload.cancelled){
+
+      status.classList.add(
+        "warning"
+      );
+
+      status.textContent =
+        "Upload cancelled.";
+
+      return;
+    }
+
+    pathInput.value =
+      path;
+
+    status.textContent =
+      `Uploaded successfully to ${path}`;
+
+    if(
+      titleInput &&
+      !titleInput.value.trim()
+    ){
+
+      titleInput.value =
+        file.name
+          .replace(/\.[^.]+$/,"")
+          .replace(/[-_]+/g," ");
+
+    }
+
+  }catch(error){
+
+    status.classList.add(
+      "error"
+    );
+
+    status.textContent =
+      error.message;
+
+  }finally{
+
+    button.disabled =
+      false;
+
+    button.textContent =
+      "Upload Video";
+
+  }
+}
 
 videoFields.addEventListener(
   "click",
@@ -3489,46 +3546,24 @@ videoFields.addEventListener(
 
     const button =
       event.target.closest(
-        ".use-release-video-btn"
+        ".upload-video-btn"
       );
 
-    if(!button) return;
+    if(!button){
+      return;
+    }
 
     const row =
-      button.closest(".video-input");
-
-    useSelectedReleaseVideo(row);
-  }
-);
-
-videoFields.addEventListener(
-  "change",
-  event=>{
-
-    const select =
-      event.target.closest(
-        ".video-release-asset-select"
+      button.closest(
+        ".video-input"
       );
 
-    if(!select) return;
+    uploadVideoRow(
+      row
+    );
 
-    const row =
-      select.closest(".video-input");
-
-    useSelectedReleaseVideo(row);
   }
 );
-
-openVideoReleaseBtn.addEventListener(
-  "click",
-  openVideoReleaseUploadPage
-);
-
-refreshVideoAssetsBtn.addEventListener(
-  "click",
-  refreshVideoReleaseAssets
-);
-
 
 
 pdfFields.addEventListener(
@@ -3874,7 +3909,25 @@ function collectProduct(){
   const pdfSources =
     [...document.querySelectorAll(".pdf-src")];
 
+  const pendingVideoUploads =
+    [...document.querySelectorAll(".video-local-file")]
+      .some(
+        input =>
+          input.files?.length &&
+          !input
+            .closest(".video-input")
+            ?.querySelector(".video-src")
+            ?.value
+            .trim()
+      );
 
+  if(pendingVideoUploads){
+
+    throw new Error(
+      "A local video file has been selected but not uploaded yet. Click Upload Video before saving the product."
+    );
+
+  }
 
   return {
     name:document.getElementById("projectName").value.trim(),
@@ -3888,10 +3941,7 @@ function collectProduct(){
     videos:titles
       .map((t,i) => ({
         title:t.value.trim() || `Instruction Video ${i+1}`,
-        src:sources[i].value.trim(),
-        storage:sources[i].dataset.storage || "",
-        assetId:sources[i].dataset.assetId || "",
-        assetName:sources[i].dataset.assetName || ""
+        src:sources[i].value.trim()
       }))
       .filter(video=>video.src),
 
@@ -3955,10 +4005,6 @@ document.getElementById("testBtn").addEventListener("click", async () => {
     await loadHomeTextCarouselEditor();
 
     try{
-      await refreshVideoReleaseAssets();
-    }catch{}
-
-    try{
       await refreshManualReleaseAssets();
     }catch{}
   }catch(err){
@@ -3971,10 +4017,6 @@ document.getElementById("refreshBtn").addEventListener("click", async () => {
   await loadSubcategories();
   await loadProducts();
   await loadHomeTextCarouselEditor();
-
-  try{
-    await refreshVideoReleaseAssets();
-  }catch{}
 
   try{
     await refreshManualReleaseAssets();
@@ -4358,7 +4400,7 @@ function organizeDeveloperConsole(){
     createPanel(
       "products",
       "Product Editor",
-      "Create or edit a product, link videos and instruction PDFs from GitHub Releases, and manage its public page details.",
+      "Create or edit a product, upload videos, link large instruction PDFs from the GitHub Release, and manage its public page details.",
       "Content"
     );
 
