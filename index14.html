@@ -161,63 +161,6 @@
       letter-spacing:.03em;
     }
 
-    .release-manager{
-      margin:10px 0 16px;
-      padding:16px;
-
-      border:1px solid #31454b;
-      border-radius:15px;
-
-      background:
-        linear-gradient(135deg,rgba(0,212,255,.055),rgba(140,255,63,.025));
-    }
-
-    .release-manager-copy{
-      display:grid;
-      gap:5px;
-      margin-bottom:13px;
-    }
-
-    .release-manager-copy strong{
-      color:#f2f2f2;
-      font-size:.95rem;
-    }
-
-    .release-manager-copy span{
-      color:#9fb2b7;
-      font-size:.82rem;
-      line-height:1.5;
-    }
-
-    .release-manager-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .release-manager .status{
-      margin-top:10px;
-    }
-
-    .release-select-row{
-      display:grid;
-      grid-template-columns:minmax(0,1fr) auto;
-      gap:10px;
-      align-items:end;
-    }
-
-    .release-select-row button{
-      min-width:160px;
-      white-space:nowrap;
-    }
-
-    .release-asset-meta{
-      margin-top:7px;
-      color:#7f9297;
-      font-size:.73rem;
-      line-height:1.45;
-    }
-
 
     .pdf-input{
       padding:14px;
@@ -550,23 +493,6 @@
       .upload-btn{
         width:100%;
       }
-      .release-select-row{
-        grid-template-columns:1fr;
-      }
-
-      .release-select-row button{
-        width:100%;
-      }
-
-      .release-manager-actions{
-        display:grid;
-        grid-template-columns:1fr;
-      }
-
-      .release-manager-actions button{
-        width:100%;
-      }
-
       .page-row{align-items:flex-start;flex-direction:column}
 
       .console-shell{
@@ -864,40 +790,8 @@
           <div class="full">
             <div class="media-section-label">
               <label style="margin:0">Instruction PDFs</label>
-              <span class="media-section-note">Large PDFs are uploaded on GitHub, then selected here</span>
+              <span class="media-section-note">PDFs uploaded here are stored as GitHub Release Assets</span>
             </div>
-
-            <div class="release-manager">
-              <div class="release-manager-copy">
-                <strong>GitHub Release PDF Manager</strong>
-                <span>
-                  1. Open the GitHub upload page &nbsp;→&nbsp;
-                  2. upload your PDF there &nbsp;→&nbsp;
-                  3. return here and refresh the PDF list.
-                </span>
-              </div>
-
-              <div class="release-manager-actions">
-                <button
-                  type="button"
-                  id="openManualReleaseBtn"
-                  class="primary"
-                >
-                  Open GitHub Upload Page
-                </button>
-
-                <button
-                  type="button"
-                  id="refreshManualAssetsBtn"
-                  class="secondary"
-                >
-                  Refresh Release PDFs
-                </button>
-              </div>
-
-              <div id="manualReleaseStatus" class="status"></div>
-            </div>
-
             <div id="pdfFields"></div>
           </div>
 
@@ -995,11 +889,11 @@ products/
       <div class="section">
         <h2>Video &amp; PDF files</h2>
         <p>
-          Videos can still be uploaded directly from the <strong>Product Editor</strong>.
-          For large instruction PDFs, click <strong>Open GitHub Upload Page</strong>, upload
-          the PDF using GitHub's own Release page, return to this Developer Console, and click
-          <strong>Refresh Release PDFs</strong>. Then choose the uploaded PDF for the product.
-          The Release Asset download URL is saved into the product automatically.
+          In the <strong>Product Editor</strong>, you can choose videos and PDFs directly
+          from your device. Videos continue to use the repository upload workflow.
+          Instruction PDFs are uploaded as <strong>GitHub Release Assets</strong>, which
+          is better suited to large downloadable manuals and keeps them out of Git history.
+          The PDF download URL is filled into the product automatically.
         </p>
       </div>
 
@@ -1021,12 +915,6 @@ const videoFields = document.getElementById("videoFields");
 const videoCount = document.getElementById("videoCount");
 const pdfFields = document.getElementById("pdfFields");
 const pdfCount = document.getElementById("pdfCount");
-const openManualReleaseBtn = document.getElementById("openManualReleaseBtn");
-const refreshManualAssetsBtn = document.getElementById("refreshManualAssetsBtn");
-const manualReleaseStatus = document.getElementById("manualReleaseStatus");
-
-let manualReleaseAssets = [];
-let manualReleaseInfo = null;
 const connectionStatus = document.getElementById("connectionStatus");
 const saveStatus = document.getElementById("saveStatus");
 const productManager = document.getElementById("productManager");
@@ -1207,112 +1095,11 @@ function currentPdfEntries(){
 
   return titles.map(
     (title,index)=>({
-
-      title:
-        title.value,
-
-      src:
-        sources[index]?.value || "",
-
-      storage:
-        sources[index]?.dataset.storage || "",
-
-      assetId:
-        sources[index]?.dataset.assetId || "",
-
-      assetName:
-        sources[index]?.dataset.assetName || ""
-
+      title:title.value,
+      src:sources[index]?.value || ""
     })
   );
 }
-
-
-function readableAssetName(asset){
-
-  return String(
-    asset?.label ||
-    asset?.name ||
-    "Instruction PDF"
-  );
-}
-
-
-function releaseAssetOptionMarkup(
-  selectedAssetId="",
-  selectedUrl=""
-){
-
-  const selectedId =
-    String(selectedAssetId || "");
-
-  const options = [
-    '<option value="">Select a PDF uploaded to the GitHub Release</option>'
-  ];
-
-  for(const asset of manualReleaseAssets){
-
-    const id =
-      String(asset.id || "");
-
-    const selected =
-      (
-        selectedId &&
-        id === selectedId
-      ) ||
-      (
-        !selectedId &&
-        selectedUrl &&
-        asset.browser_download_url === selectedUrl
-      );
-
-    options.push(
-      `<option value="${escapeHtml(id)}" ${selected ? "selected" : ""}>${escapeHtml(readableAssetName(asset))} (${escapeHtml(formatBytes(Number(asset.size) || 0))})</option>`
-    );
-
-  }
-
-  return options.join("");
-}
-
-
-function refreshPdfReleaseSelectors(){
-
-  document
-    .querySelectorAll(".pdf-input")
-    .forEach(
-      row=>{
-
-        const select =
-          row.querySelector(
-            ".pdf-release-asset-select"
-          );
-
-        const source =
-          row.querySelector(
-            ".pdf-src"
-          );
-
-        if(!select || !source){
-          return;
-        }
-
-        const selectedAssetId =
-          source.dataset.assetId || "";
-
-        const selectedUrl =
-          source.value.trim();
-
-        select.innerHTML =
-          releaseAssetOptionMarkup(
-            selectedAssetId,
-            selectedUrl
-          );
-
-      }
-    );
-}
-
 
 
 function buildPdfFields(entries=currentPdfEntries()){
@@ -1356,7 +1143,7 @@ function buildPdfFields(entries=currentPdfEntries()){
 
       ${
         saved.storage === "release-asset"
-          ? '<div class="release-badge">Linked to GitHub Release Asset</div>'
+          ? '<div class="release-badge">Stored as GitHub Release Asset</div>'
           : ""
       }
 
@@ -1377,7 +1164,7 @@ function buildPdfFields(entries=currentPdfEntries()){
 
           <input
             class="pdf-src"
-            placeholder="Choose an uploaded Release PDF below, or paste a URL"
+            placeholder="GitHub Release Asset URL is filled automatically"
             value="${escapeHtml(saved.src || "")}"
             data-storage="${escapeHtml(saved.storage || "")}"
             data-asset-id="${escapeHtml(saved.assetId || "")}"
@@ -1386,20 +1173,21 @@ function buildPdfFields(entries=currentPdfEntries()){
         </div>
 
         <div class="upload-box">
+          <label>Upload PDF from this device</label>
 
-          <label>Select a PDF already uploaded to GitHub</label>
+          <div class="upload-row">
 
-          <div class="release-select-row">
-
-            <select class="pdf-release-asset-select">
-              ${releaseAssetOptionMarkup(saved.assetId || "", saved.src || "")}
-            </select>
+            <input
+              class="pdf-local-file"
+              type="file"
+              accept="application/pdf,.pdf"
+            >
 
             <button
               type="button"
-              class="secondary use-release-pdf-btn"
+              class="secondary upload-btn upload-pdf-btn"
             >
-              Use Selected PDF
+              Upload PDF
             </button>
 
           </div>
@@ -1407,11 +1195,12 @@ function buildPdfFields(entries=currentPdfEntries()){
           <div class="upload-status"></div>
 
           <small class="file-size-note">
-            To add a new large PDF, use <strong>Open GitHub Upload Page</strong> above.
-            After GitHub finishes the upload, return here and click
-            <strong>Refresh Release PDFs</strong>.
+            The PDF is uploaded as a GitHub Release Asset. Large manuals such as
+            79 MB or 91 MB can be stored this way without adding them to the
+            repository's Git history. The download URL above is filled automatically.
+            If GitHub temporarily blocks browser-based Release Asset uploads, retry the
+            upload or use the repository's Releases page as a fallback.
           </small>
-
         </div>
 
       </div>
@@ -1423,6 +1212,7 @@ function buildPdfFields(entries=currentPdfEntries()){
 
   }
 }
+
 
 videoCount.addEventListener(
   "input",
@@ -2760,13 +2550,7 @@ renderSubcategoryManager();
 
 
 /* ============================================================
-   GITHUB RELEASE PDF MANAGER
-
-   Workflow:
-   1. Open GitHub's Release edit page.
-   2. Upload large PDFs there using GitHub's own UI.
-   3. Return here and refresh the Release Asset list.
-   4. Select the uploaded PDF for the product.
+   GITHUB RELEASE ASSETS FOR LARGE INSTRUCTION PDFs
    ============================================================ */
 
 const MANUAL_RELEASE_TAG =
@@ -2774,6 +2558,9 @@ const MANUAL_RELEASE_TAG =
 
 const MANUAL_RELEASE_NAME =
   "NILDA Instruction Manuals";
+
+const MAX_RELEASE_ASSET_BYTES =
+  2 * 1024 * 1024 * 1024;
 
 
 async function githubJsonRequest(
@@ -2841,18 +2628,12 @@ async function getManualRelease(){
 
   try{
 
-    const release =
-      await githubJsonRequest(
-        `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases/tags/${encodedTag}`,
-        {
-          method:"GET"
-        }
-      );
-
-    manualReleaseInfo =
-      release;
-
-    return release;
+    return await githubJsonRequest(
+      `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases/tags/${encodedTag}`,
+      {
+        method:"GET"
+      }
+    );
 
   }catch(error){
 
@@ -2863,33 +2644,27 @@ async function getManualRelease(){
   }
 
 
-  manualReleaseStatus.textContent =
-    "Creating the Instruction Manuals release...";
-
-  const release =
-    await githubJsonRequest(
-      `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases`,
-      {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          tag_name:MANUAL_RELEASE_TAG,
-          target_commitish:c.branch,
-          name:MANUAL_RELEASE_NAME,
-          body:"Downloadable NILDA instruction manuals used by the public Instruction Hub.",
-          draft:false,
-          prerelease:false,
-          generate_release_notes:false
-        })
-      }
-    );
-
-  manualReleaseInfo =
-    release;
-
-  return release;
+  /*
+    No release exists yet. Create one automatically.
+  */
+  return await githubJsonRequest(
+    `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases`,
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        tag_name:MANUAL_RELEASE_TAG,
+        target_commitish:c.branch,
+        name:MANUAL_RELEASE_NAME,
+        body:"Downloadable NILDA instruction manuals used by the public Instruction Hub.",
+        draft:false,
+        prerelease:false,
+        generate_release_notes:false
+      })
+    }
+  );
 }
 
 
@@ -2900,302 +2675,216 @@ async function listReleaseAssets(
   const c =
     validateConfig();
 
-  const allAssets =
-    [];
-
-  for(let page=1;page<=10;page++){
-
-    const assets =
-      await githubJsonRequest(
-        `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases/${encodeURIComponent(releaseId)}/assets?per_page=100&page=${page}`,
-        {
-          method:"GET"
-        }
-      ) || [];
-
-    allAssets.push(
-      ...assets
-    );
-
-    if(assets.length < 100){
-      break;
+  return await githubJsonRequest(
+    `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases/${encodeURIComponent(releaseId)}/assets?per_page=100`,
+    {
+      method:"GET"
     }
-
-  }
-
-  return allAssets;
+  ) || [];
 }
 
 
-function manualReleaseEditUrl(){
+async function deleteReleaseAsset(
+  assetId
+){
 
   const c =
     validateConfig();
 
-  return (
-    `https://github.com/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}` +
-    `/releases/edit/${encodeURIComponent(MANUAL_RELEASE_TAG)}`
+  await githubJsonRequest(
+    `https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/releases/assets/${encodeURIComponent(assetId)}`,
+    {
+      method:"DELETE"
+    }
   );
 }
 
 
-async function openManualReleaseUploadPage(){
-
-  manualReleaseStatus.className =
-    "status";
-
-  /*
-    Open a tab immediately so browser popup blocking does not stop
-    the navigation after the GitHub API call finishes.
-  */
-  const popup =
-    window.open(
-      "about:blank",
-      "_blank"
-    );
-
-  try{
-
-    validateConfig();
-
-    openManualReleaseBtn.disabled =
-      true;
-
-    openManualReleaseBtn.textContent =
-      "Preparing GitHub...";
-
-    manualReleaseStatus.textContent =
-      "Preparing the GitHub Instruction Manuals release...";
-
-    await getManualRelease();
-
-    const url =
-      manualReleaseEditUrl();
-
-    if(popup){
-
-      popup.opener =
-        null;
-
-      popup.location.href =
-        url;
-
-    }else{
-
-      window.open(
-        url,
-        "_blank",
-        "noopener,noreferrer"
-      );
-
-    }
-
-    manualReleaseStatus.textContent =
-      "GitHub opened in a new tab. Upload the PDF there, wait for GitHub to finish, then return here and click Refresh Release PDFs.";
-
-  }catch(error){
-
-    if(
-      popup &&
-      !popup.closed
-    ){
-      popup.close();
-    }
-
-    manualReleaseStatus.innerHTML =
-      `<span class="error">${escapeHtml(error.message)}</span>`;
-
-  }finally{
-
-    openManualReleaseBtn.disabled =
-      false;
-
-    openManualReleaseBtn.textContent =
-      "Open GitHub Upload Page";
-
-  }
-}
-
-
-async function refreshManualReleaseAssets(){
-
-  manualReleaseStatus.className =
-    "status";
-
-  try{
-
-    validateConfig();
-
-    refreshManualAssetsBtn.disabled =
-      true;
-
-    refreshManualAssetsBtn.textContent =
-      "Refreshing...";
-
-    manualReleaseStatus.textContent =
-      "Reading PDFs from the GitHub Instruction Manuals release...";
-
-    const release =
-      await getManualRelease();
-
-    const assets =
-      await listReleaseAssets(
-        release.id
-      );
-
-    manualReleaseAssets =
-      assets
-        .filter(
-          asset =>
-            String(asset.name || "")
-              .toLowerCase()
-              .endsWith(".pdf") ||
-            String(asset.content_type || "")
-              .toLowerCase() ===
-              "application/pdf"
-        )
-        .sort(
-          (a,b)=>
-            String(a.name || "")
-              .localeCompare(
-                String(b.name || ""),
-                undefined,
-                {
-                  numeric:true,
-                  sensitivity:"base"
-                }
-              )
-        );
-
-    refreshPdfReleaseSelectors();
-
-    if(manualReleaseAssets.length){
-
-      manualReleaseStatus.textContent =
-        `${manualReleaseAssets.length} PDF${manualReleaseAssets.length === 1 ? "" : "s"} found. Choose the correct PDF in each Instruction PDF row below.`;
-
-    }else{
-
-      manualReleaseStatus.innerHTML =
-        '<span class="warning">No PDFs were found in the Instruction Manuals release. Open GitHub Upload Page, upload a PDF, save/update the release, then refresh again.</span>';
-
-    }
-
-  }catch(error){
-
-    manualReleaseStatus.innerHTML =
-      `<span class="error">${escapeHtml(error.message)}</span>`;
-
-  }finally{
-
-    refreshManualAssetsBtn.disabled =
-      false;
-
-    refreshManualAssetsBtn.textContent =
-      "Refresh Release PDFs";
-
-  }
-}
-
-
-function useSelectedReleasePdf(
-  row
+function releaseAssetFilename(
+  originalFilename
 ){
 
-  const select =
-    row.querySelector(
-      ".pdf-release-asset-select"
+  const projectName =
+    document
+      .getElementById("projectName")
+      .value
+      .trim();
+
+  const productPrefix =
+    slugify(
+      projectName || "instruction-manual"
     );
 
-  const source =
-    row.querySelector(
-      ".pdf-src"
+  const cleanFilename =
+    safeRepoFilename(
+      originalFilename
     );
 
-  const title =
-    row.querySelector(
-      ".pdf-title"
+  return `${productPrefix}--${cleanFilename}`;
+}
+
+
+async function uploadPdfAsReleaseAsset(
+  file,
+  statusElement
+){
+
+  const c =
+    validateConfig();
+
+  if(!file){
+
+    throw new Error(
+      "Choose a PDF file first."
     );
 
-  const status =
-    row.querySelector(
-      ".upload-status"
-    );
-
-  status.className =
-    "upload-status";
-
-  const asset =
-    manualReleaseAssets.find(
-      item =>
-        String(item.id || "") ===
-        String(select.value || "")
-    );
-
-  if(!asset){
-
-    status.classList.add(
-      "warning"
-    );
-
-    status.textContent =
-      "Choose a PDF from the refreshed Release PDF list first.";
-
-    return;
   }
-
-  source.value =
-    asset.browser_download_url || "";
-
-  source.dataset.storage =
-    "release-asset";
-
-  source.dataset.assetId =
-    String(asset.id || "");
-
-  source.dataset.assetName =
-    asset.name || "";
 
   if(
-    title &&
-    !title.value.trim()
+    file.type !== "application/pdf" &&
+    !file.name.toLowerCase().endsWith(".pdf")
   ){
 
-    title.value =
-      String(asset.name || "Instruction Manual")
-        .replace(/\.pdf$/i,"")
-        .replace(/[-_]+/g," ");
-
-  }
-
-  let badge =
-    row.querySelector(
-      ".release-badge"
+    throw new Error(
+      "Please choose a PDF file."
     );
 
-  if(!badge){
+  }
 
-    badge =
-      document.createElement("div");
+  if(file.size > MAX_RELEASE_ASSET_BYTES){
 
-    badge.className =
-      "release-badge";
-
-    row
-      .querySelector("strong")
-      ?.insertAdjacentElement(
-        "afterend",
-        badge
-      );
+    throw new Error(
+      `${file.name} is larger than GitHub's 2 GiB release-asset limit.`
+    );
 
   }
 
-  badge.textContent =
-    "Linked to GitHub Release Asset";
+  const release =
+    await getManualRelease();
 
-  status.textContent =
-    `Selected: ${asset.name}`;
+  const assetName =
+    releaseAssetFilename(
+      file.name
+    );
 
+  const assets =
+    await listReleaseAssets(
+      release.id
+    );
+
+  const existing =
+    assets.find(
+      asset =>
+        String(asset.name || "")
+          .toLocaleLowerCase() ===
+        assetName.toLocaleLowerCase()
+    );
+
+  if(existing){
+
+    if(
+      !confirm(
+        `"${assetName}" already exists in the Instruction Manuals release. Replace it?`
+      )
+    ){
+
+      return {
+        cancelled:true
+      };
+
+    }
+
+    statusElement.textContent =
+      `Replacing existing Release Asset "${assetName}"...`;
+
+    await deleteReleaseAsset(
+      existing.id
+    );
+
+  }
+
+  /*
+    GitHub's release asset upload endpoint accepts the raw binary
+    file directly. This avoids Base64-encoding a 79–91 MB PDF.
+  */
+  const uploadBase =
+    String(release.upload_url || "")
+      .replace(
+        /\{\?name,label\}$/,
+        ""
+      );
+
+  if(!uploadBase){
+
+    throw new Error(
+      "GitHub did not return a Release Asset upload URL."
+    );
+
+  }
+
+  const uploadUrl =
+    `${uploadBase}?name=${encodeURIComponent(assetName)}&label=${encodeURIComponent(file.name)}`;
+
+  statusElement.textContent =
+    `Uploading ${file.name} (${formatBytes(file.size)}) as a GitHub Release Asset...`;
+
+  let response;
+
+  try{
+
+    response =
+      await fetch(
+        uploadUrl,
+        {
+          method:"POST",
+          headers:{
+            "Accept":"application/vnd.github+json",
+            "Authorization":`Bearer ${c.token}`,
+            "X-GitHub-Api-Version":"2022-11-28",
+            "Content-Type":file.type || "application/pdf"
+          },
+          body:file
+        }
+      );
+
+  }catch(error){
+
+    throw new Error(
+      "The browser could not reach GitHub's Release Asset upload service. This can happen if GitHub temporarily blocks the cross-origin upload request. Please try again; if it continues, use the release page as a fallback."
+    );
+
+  }
+
+  const body =
+    await response
+      .json()
+      .catch(()=>null);
+
+  if(!response.ok){
+
+    const details =
+      body?.message ||
+      `GitHub Release Asset upload failed (${response.status})`;
+
+    throw new Error(
+      details
+    );
+
+  }
+
+  if(!body?.browser_download_url){
+
+    throw new Error(
+      "GitHub uploaded the PDF but did not return a download URL."
+    );
+
+  }
+
+  return {
+    cancelled:false,
+    asset:body,
+    release
+  };
 }
 
 
@@ -3204,10 +2893,10 @@ function useSelectedReleasePdf(
    LOCAL DEVICE FILE UPLOADS
 
    Videos -> videos/<filename>
+   PDFs   -> pdfs/<filename>
 
-   Video uploads use the authenticated GitHub Contents API connection
-   already configured in this Developer Console. Large instruction PDFs
-   are handled separately through GitHub's Release page.
+   Uploads use the authenticated GitHub Contents API connection
+   already configured in this Developer Console.
    ============================================================ */
 
 const MAX_BROWSER_UPLOAD_BYTES =
@@ -3412,28 +3101,40 @@ async function uploadBinaryFileToRepository(
 }
 
 
-async function uploadVideoRow(
-  row
+async function uploadMediaRow(
+  row,
+  type
 ){
+
+  const isVideo =
+    type === "video";
 
   const fileInput =
     row.querySelector(
-      ".video-local-file"
+      isVideo
+        ? ".video-local-file"
+        : ".pdf-local-file"
     );
 
   const pathInput =
     row.querySelector(
-      ".video-src"
+      isVideo
+        ? ".video-src"
+        : ".pdf-src"
     );
 
   const titleInput =
     row.querySelector(
-      ".video-title"
+      isVideo
+        ? ".video-title"
+        : ".pdf-title"
     );
 
   const button =
     row.querySelector(
-      ".upload-video-btn"
+      isVideo
+        ? ".upload-video-btn"
+        : ".upload-pdf-btn"
     );
 
   const status =
@@ -3457,7 +3158,7 @@ async function uploadVideoRow(
     );
 
     status.textContent =
-      "Choose a video file first.";
+      "Choose a file first.";
 
     return;
   }
@@ -3472,41 +3173,128 @@ async function uploadVideoRow(
     button.textContent =
       "Uploading...";
 
-    const filename =
-      safeRepoFilename(
-        file.name
-      );
 
-    const path =
-      `videos/${filename}`;
+    /*
+      VIDEOS
+      Continue to use the existing repository upload path because
+      the public site embeds video sources for playback.
+    */
+    if(isVideo){
 
-    status.textContent =
-      `Preparing ${file.name} (${formatBytes(file.size)})...`;
+      const filename =
+        safeRepoFilename(
+          file.name
+        );
 
-    const upload =
-      await uploadBinaryFileToRepository(
-        file,
-        path,
-        `Upload video: ${filename}`
-      );
-
-    if(upload.cancelled){
-
-      status.classList.add(
-        "warning"
-      );
+      const path =
+        `videos/${filename}`;
 
       status.textContent =
-        "Upload cancelled.";
+        `Preparing ${file.name} (${formatBytes(file.size)})...`;
 
-      return;
+      const upload =
+        await uploadBinaryFileToRepository(
+          file,
+          path,
+          `Upload video: ${filename}`
+        );
+
+      if(upload.cancelled){
+
+        status.classList.add(
+          "warning"
+        );
+
+        status.textContent =
+          "Upload cancelled.";
+
+        return;
+      }
+
+      pathInput.value =
+        path;
+
+      pathInput.dataset.storage =
+        "repository";
+
+      pathInput.dataset.assetId =
+        "";
+
+      pathInput.dataset.assetName =
+        "";
+
+      status.textContent =
+        `Uploaded successfully to ${path}`;
+
+    }else{
+
+      /*
+        PDFs
+        Upload as a GitHub Release Asset so large manuals do not
+        enter the Git repository history.
+      */
+      const upload =
+        await uploadPdfAsReleaseAsset(
+          file,
+          status
+        );
+
+      if(upload.cancelled){
+
+        status.classList.add(
+          "warning"
+        );
+
+        status.textContent =
+          "Upload cancelled.";
+
+        return;
+      }
+
+      pathInput.value =
+        upload.asset.browser_download_url;
+
+      pathInput.dataset.storage =
+        "release-asset";
+
+      pathInput.dataset.assetId =
+        String(
+          upload.asset.id || ""
+        );
+
+      pathInput.dataset.assetName =
+        upload.asset.name || "";
+
+      status.textContent =
+        `Uploaded successfully as GitHub Release Asset: ${upload.asset.name}`;
+
+      const badge =
+        row.querySelector(
+          ".release-badge"
+        );
+
+      if(!badge){
+
+        const created =
+          document.createElement("div");
+
+        created.className =
+          "release-badge";
+
+        created.textContent =
+          "Stored as GitHub Release Asset";
+
+        row
+          .querySelector("strong")
+          ?.insertAdjacentElement(
+            "afterend",
+            created
+          );
+
+      }
+
     }
 
-    pathInput.value =
-      path;
-
-    status.textContent =
-      `Uploaded successfully to ${path}`;
 
     if(
       titleInput &&
@@ -3535,7 +3323,9 @@ async function uploadVideoRow(
       false;
 
     button.textContent =
-      "Upload Video";
+      isVideo
+        ? "Upload Video"
+        : "Upload PDF";
 
   }
 }
@@ -3558,8 +3348,9 @@ videoFields.addEventListener(
         ".video-input"
       );
 
-    uploadVideoRow(
-      row
+    uploadMediaRow(
+      row,
+      "video"
     );
 
   }
@@ -3572,7 +3363,7 @@ pdfFields.addEventListener(
 
     const button =
       event.target.closest(
-        ".use-release-pdf-btn"
+        ".upload-pdf-btn"
       );
 
     if(!button){
@@ -3584,53 +3375,12 @@ pdfFields.addEventListener(
         ".pdf-input"
       );
 
-    useSelectedReleasePdf(
-      row
+    uploadMediaRow(
+      row,
+      "pdf"
     );
 
   }
-);
-
-
-pdfFields.addEventListener(
-  "change",
-  event=>{
-
-    const select =
-      event.target.closest(
-        ".pdf-release-asset-select"
-      );
-
-    if(!select){
-      return;
-    }
-
-    const row =
-      select.closest(
-        ".pdf-input"
-      );
-
-    /*
-      Selecting an item fills it immediately; the button remains
-      available as an obvious explicit action.
-    */
-    useSelectedReleasePdf(
-      row
-    );
-
-  }
-);
-
-
-openManualReleaseBtn.addEventListener(
-  "click",
-  openManualReleaseUploadPage
-);
-
-
-refreshManualAssetsBtn.addEventListener(
-  "click",
-  refreshManualReleaseAssets
 );
 
 
@@ -3921,10 +3671,25 @@ function collectProduct(){
             .trim()
       );
 
-  if(pendingVideoUploads){
+  const pendingPdfUploads =
+    [...document.querySelectorAll(".pdf-local-file")]
+      .some(
+        input =>
+          input.files?.length &&
+          !input
+            .closest(".pdf-input")
+            ?.querySelector(".pdf-src")
+            ?.value
+            .trim()
+      );
+
+  if(
+    pendingVideoUploads ||
+    pendingPdfUploads
+  ){
 
     throw new Error(
-      "A local video file has been selected but not uploaded yet. Click Upload Video before saving the product."
+      "A local file has been selected but not uploaded yet. Click its Upload button before saving the product."
     );
 
   }
@@ -4003,10 +3768,6 @@ document.getElementById("testBtn").addEventListener("click", async () => {
     await loadSubcategories();
     await loadProducts();
     await loadHomeTextCarouselEditor();
-
-    try{
-      await refreshManualReleaseAssets();
-    }catch{}
   }catch(err){
     connectionStatus.innerHTML = `<span class="error">${escapeHtml(err.message)}</span>`;
   }
@@ -4017,10 +3778,6 @@ document.getElementById("refreshBtn").addEventListener("click", async () => {
   await loadSubcategories();
   await loadProducts();
   await loadHomeTextCarouselEditor();
-
-  try{
-    await refreshManualReleaseAssets();
-  }catch{}
 });
 
 document.getElementById("saveProductBtn").addEventListener("click", async () => {
@@ -4400,7 +4157,7 @@ function organizeDeveloperConsole(){
     createPanel(
       "products",
       "Product Editor",
-      "Create or edit a product, upload videos, link large instruction PDFs from the GitHub Release, and manage its public page details.",
+      "Create or edit a product, upload videos and instruction PDFs from your device, and manage its public page details.",
       "Content"
     );
 
